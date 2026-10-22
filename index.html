@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>山光里政策島 ｜ 李昭靜 里長候選人政策展示</title>
+  <style>
+    :root {
+      --coral: #db6a41;
+      --coral-dark: #be532c;
+      --ink: #211d1d;
+      --cream: #fff8f4;
+      --yellow: #fcea8b;
+      --stone: #c5b5a7;
+      --green: #71806a;
+      --glass: rgba(255, 248, 244, 0.86);
+      --glass-card: rgba(255, 255, 255, 0.88);
+      --shadow-sm: 0 4px 12px rgba(74, 42, 20, 0.08);
+      --shadow-md: 0 10px 28px rgba(74, 42, 20, 0.12);
+      --shadow-lg: 0 18px 48px rgba(74, 42, 20, 0.16);
+      --font-sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --font-serif: Georgia, Cambria, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: radial-gradient(circle at 50% 40%, #fffdf9 0%, #edddcf 100%);
+    }
+
+    #webgl-container { position: absolute; inset: 0; z-index: 1; outline: none; }
+
+    /* UI Overlay Shell */
+    .ui-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+    .interactive { pointer-events: auto; }
+
+    /* Brand Card (Top Left) */
+    .brand-card {
+      position: absolute; top: 18px; left: 18px;
+      padding: 12px 18px; border-radius: 18px;
+      background: var(--glass);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.6);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .brand-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--coral), #f7a584);
+      display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px;
+      box-shadow: 0 2px 8px rgba(219,106,65,0.3);
+    }
+    .brand-meta h1 { font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: 0.5px; }
+    .brand-meta p { font-size: 11px; color: #6d625d; font-family: var(--font-mono); font-weight: 700; letter-spacing: 1.5px; }
+
+    /* Quick Toolbar (Top Left under brand) */
+    .top-actions {
+      position: absolute; top: 88px; left: 18px; display: flex; gap: 8px;
+    }
+    .btn-chip {
+      height: 38px; min-width: 38px; padding: 0 14px; border-radius: 999px;
+      background: #fff; border: 1px solid rgba(197, 181, 167, 0.4);
+      color: var(--ink); font-size: 13px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      cursor: pointer; box-shadow: var(--shadow-sm); transition: all .16s ease;
+    }
+    .btn-chip:hover { background: var(--yellow); border-color: #ebd169; }
+    .btn-chip:active { background: var(--ink); color: #fff; }
+    .btn-chip:focus-visible { outline: 3px solid var(--coral); }
+
+    /* Right Sidebar (Policy List & Collaborations) */
+    .sidebar {
+      position: absolute; top: 18px; right: 18px; bottom: 18px; width: 330px;
+      background: var(--glass);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-radius: 24px; border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: var(--shadow-lg); display: flex; flex-direction: column; overflow: hidden;
+      transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sidebar.collapsed { transform: translateX(calc(100% + 24px)); }
+    .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid rgba(74,42,20,0.06); }
+    .search-input {
+      width: 100%; height: 38px; border-radius: 12px; padding: 0 12px;
+      border: 1px solid rgba(197, 181, 167, 0.6); background: rgba(255,255,255,0.9);
+      font-size: 13px; font-family: var(--font-sans); color: var(--ink); outline: none;
+    }
+    .search-input:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(219,106,65,0.15); }
+
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tab-btn {
+      flex: 1; height: 32px; border-radius: 8px; border: none; background: transparent;
+      font-size: 12px; font-weight: 700; color: #7f736d; cursor: pointer; transition: all .14s;
+    }
+    .tab-btn.active { background: #fff; color: var(--coral); box-shadow: var(--shadow-sm); }
+
+    .sidebar-body { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    .sidebar-body::-webkit-scrollbar { width: 5px; }
+    .sidebar-body::-webkit-scrollbar-thumb { background: rgba(197,181,167,0.5); border-radius: 4px; }
+
+    /* Accordion / List styles */
+    .island-accordion {
+      margin-bottom: 8px; border-radius: 14px; background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.8); overflow: hidden; transition: background .15s;
+    }
+    .island-accordion:hover { background: rgba(255,255,255,0.95); }
+    .accordion-summary {
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; font-size: 13px; font-weight: 700;
+    }
+    .accordion-badge {
+      font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+      padding: 2px 6px; border-radius: 999px; background: rgba(219,106,65,0.12); color: var(--coral);
+    }
+    .accordion-content { padding: 4px 10px 10px; border-top: 1px dashed rgba(74,42,20,0.08); display: flex; flex-direction: column; gap: 6px; }
+    .policy-item-pill {
+      padding: 7px 10px; border-radius: 8px; background: #fff; border: 1px solid rgba(197, 181, 167, 0.3);
+      cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 12px; transition: all .12s;
+    }
+    .policy-item-pill:hover { border-color: var(--coral); transform: translateX(2px); }
+    .policy-item-pill.active { background: #fff2ed; border-color: var(--coral); font-weight: 700; }
+
+    /* Left Detail Card */
+    .detail-card {
+      position: absolute; top: 140px; left: 18px; width: 340px; max-height: calc(100vh - 240px);
+      background: var(--glass-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 22px; border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: var(--shadow-lg); overflow-y: auto; padding: 18px; z-index: 12;
+      display: none; animation: slideInLeft .24s ease-out forwards;
+    }
+    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+    .card-close {
+      position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: rgba(0,0,0,0.06); cursor: pointer; display: grid; place-items: center; font-size: 14px;
+    }
+    .card-close:hover { background: var(--coral); color: #fff; }
+    .eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--coral); text-transform: uppercase; margin-bottom: 4px; }
+    .card-title { font-size: 20px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; }
+    .card-desc { font-size: 13px; line-height: 1.5; color: #554a44; margin-bottom: 14px; }
+    .facts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 12px 0; }
+    .fact-box {
+      background: #fff; padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(197, 181, 167, 0.35); text-align: center;
+    }
+    .fact-num { font-family: var(--font-serif); font-size: 20px; font-weight: 700; font-style: italic; color: var(--coral); }
+    .fact-label { font-size: 10px; color: #7f736d; margin-top: 2px; }
+    .timeline-badge {
+      display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      background: #eef3eb; color: var(--green); border: 1px solid #d4e0cf; margin-top: 4px;
+    }
+    .preview-canvas-box {
+      width: 100%; height: 130px; border-radius: 14px; background: linear-gradient(180deg, #f7f3ed 0%, #ede5da 100%);
+      margin-bottom: 12px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    /* HUD Bar (Bottom Center) */
+    .hud-bar {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      padding: 6px 10px; border-radius: 999px; background: var(--glass);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.7); box-shadow: var(--shadow-md);
+      display: flex; align-items: center; gap: 6px; z-index: 15;
+    }
+    .hud-divider { width: 1px; height: 26px; background: rgba(74,42,20,0.12); margin: 0 4px; }
+    .hud-btn {
+      height: 44px; min-width: 48px; padding: 0 10px; border-radius: 999px; border: none; background: transparent;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 700; transition: all .14s;
+    }
+    .hud-btn .icon { font-size: 14px; }
+    .hud-btn:hover { background: var(--yellow); }
+    .hud-btn.active { background: var(--coral); color: #fff; }
+    .hud-time-btn { font-size: 11px; padding: 0 12px; height: 36px; border-radius: 999px; }
+
+    /* Live Ward Log (Top Right next to Sidebar) */
+    .log-panel {
+      position: absolute; top: 18px; right: 360px; width: 280px; max-height: 190px;
+      background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-radius: 18px; border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow-sm);
+      padding: 10px 14px; overflow: hidden; display: flex; flex-direction: column; z-index: 9;
+    }
+    .log-title {
+      font-size: 11px; font-family: var(--font-mono); font-weight: 700; letter-spacing: 1px;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #27ae60; box-shadow: 0 0 8px #27ae60; }
+    .log-list { overflow-y: auto; font-size: 11px; line-height: 1.45; color: #50443e; display: flex; flex-direction: column; gap: 4px; }
+
+    /* CSS2D Island & Subitem Labels */
+    .css2d-island-pill {
+      background: #fff; color: var(--ink); padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 800; box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      border: 1.5px solid var(--coral); cursor: pointer; white-space: nowrap;
+      pointer-events: auto; transform: translate(-50%, -100%); transition: transform .14s, background .14s;
+    }
+    .css2d-island-pill:hover { background: var(--yellow); transform: translate(-50%, -108%) scale(1.05); }
+    .css2d-island-pill.selected { background: var(--ink); color: #fff; border-color: var(--yellow); }
+
+    .css2d-subitem-pin {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--coral); color: #fff;
+      font-size: 11px; font-weight: 800; display: grid; place-items: center;
+      box-shadow: 0 3px 8px rgba(219,106,65,0.4); border: 2px solid #fff;
+      transform: translate(-50%, -50%); cursor: pointer; pointer-events: auto;
+    }
+
+    .css2d-walker-bubble {
+      background: rgba(33,29,29,0.88); color: #fff; padding: 2px 7px; border-radius: 6px;
+      font-size: 10px; font-weight: 600; white-space: nowrap; transform: translate(-50%, -130%);
+      pointer-events: none; border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* Modal / Onboarding Dialog */
+    .modal-overlay {
+      position: absolute; inset: 0; background: rgba(33,29,29,0.45); backdrop-filter: blur(6px);
+      z-index: 100; display: grid; place-items: center; pointer-events: auto;
+    }
+    .modal-box {
+      width: 90%; max-width: 440px; background: #fff; border-radius: 24px; padding: 24px;
+      box-shadow: var(--shadow-lg); text-align: center;
+    }
+    .modal-step { text-align: left; margin: 14px 0; display: flex; gap: 12px; font-size: 13px; color: #5a4f49; }
+    .modal-step-idx {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); color: var(--ink);
+      font-weight: 800; display: grid; place-items: center; flex-shrink: 0;
+    }
+
+    /* Loading Screen */
+    #loader {
+      position: absolute; inset: 0; background: #fbf6f0; z-index: 200;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    }
+    .spinner {
+      width: 44px; height: 44px; border: 4px solid rgba(219,106,65,0.2);
+      border-top-color: var(--coral); border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive / Mobile */
+    @media (max-width: 800px) {
+      .brand-card { top: 12px; left: 12px; padding: 8px 12px; }
+      .brand-meta h1 { font-size: 15px; }
+      .top-actions { top: 70px; left: 12px; }
+      .log-panel { display: none; }
+      .sidebar {
+        top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 55%;
+        border-radius: 24px 24px 0 0; transform: translateY(0);
+      }
+      .sidebar.collapsed { transform: translateY(100%); }
+      .detail-card {
+        top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 48%;
+        border-radius: 24px 24px 0 0;
+      }
+      .hud-bar { bottom: 10px; width: 92%; overflow-x: auto; justify-content: space-between; border-radius: 18px; }
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="font-weight: 800; font-size: 18px; color: var(--ink);">山光里政策島</div>
+    <div id="loader-msg" style="font-size: 13px; color: #7f736d;">正在組合山光里政策模型社區…</div>
+  </div>
+
+  <div id="webgl-container"></div>
+
+  <!-- UI Overlay -->
+  <div class="ui-layer" id="ui-layer">
+    <!-- Brand Card -->
+    <div class="brand-card interactive">
+      <div class="brand-avatar">昭</div>
+      <div class="brand-meta">
+        <h1 data-zh="李昭靜" data-en="Lee Chao-Ching">李昭靜</h1>
+        <p data-zh="台北市汐止區山光里政策島" data-en="SHANGUANG WARD POLICY ISLAND">台北市汐止區山光里政策島</p>
+      </div>
+    </div>
+
+    <!-- Top Left Quick Actions -->
+    <div class="top-actions interactive">
+      <button class="btn-chip" id="btn-reset-cam" title="全景視角">
+        <span>⟲</span> <span data-zh="全景" data-en="Overview">全景</span>
+      </button>
+      <button class="btn-chip" id="btn-toggle-sidebar" title="政見清單">
+        <span>☰</span> <span data-zh="清單" data-en="List">清單</span>
+      </button>
+      <button class="btn-chip" id="btn-lang" title="切換語言">
+        <span>文/A</span>
+      </button>
+      <button class="btn-chip" id="btn-help" title="操作說明">?</button>
+    </div>
+
+    <!-- Live Event Log -->
+    <div class="log-panel interactive" id="log-panel">
+      <div class="log-title">
+        <div class="live-dot"></div>
+        <span data-zh="山光里協作日誌" data-en="LIVE WARD LOG">山光里協作日誌</span>
+      </div>
+      <div class="log-list" id="log-list">
+        <div>[08:00] 早安！山光里守望與關懷網絡運作中。</div>
+      </div>
+    </div>
+
+    <!-- Detail Drawer / Card -->
+    <div class="detail-card interactive" id="detail-card">
+      <button class="card-close" id="card-close-btn">✕</button>
+      <div class="eyebrow" id="card-eyebrow">POLICY DETAIL</div>
+      <div class="preview-canvas-box" id="card-preview-box">
+        <canvas id="offscreen-thumb" width="160" height="130"></canvas>
+      </div>
+      <h2 class="card-title" id="card-title">細項名稱</h2>
+      <p class="card-desc" id="card-desc">政見白話具體執行計畫與里民共好目標。</p>
+      <div class="facts-grid" id="card-facts"></div>
+      <div id="card-footer">
+        <span class="timeline-badge" id="card-timeline">上任半年執行</span>
+      </div>
+    </div>
+
+    <!-- Right Sidebar (Island & Item Directory) -->
+    <aside class="sidebar interactive" id="sidebar">
+      <div class="sidebar-header">
+        <input type="text" id="search-input" class="search-input" placeholder="搜尋里政議題、關鍵字..." />
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-themes" data-zh="12大里政主題" data-en="Themes">12大里政主題</button>
+          <button class="tab-btn" id="tab-flows" data-zh="社區協作網絡" data-en="Collaborations">社區協作網絡</button>
+        </div>
+      </div>
+      <div class="sidebar-body" id="sidebar-list">
+        <!-- Rendered by JS -->
+      </div>
+    </aside>
+
+    <!-- Bottom HUD Bar -->
+    <div class="hud-bar interactive">
+      <button class="hud-btn hud-time-btn" id="btn-time-morning" title="晨運 (06:00)">晨運 06</button>
+      <button class="hud-btn hud-time-btn active" id="btn-time-day" title="早市 (10:00)">早市 10</button>
+      <button class="hud-btn hud-time-btn" id="btn-time-dusk" title="黃昏 (17:00)">黃昏 17</button>
+      <button class="hud-btn hud-time-btn" id="btn-time-night" title="夜巡 (21:00)">夜巡 21</button>
+      <div class="hud-divider"></div>
+      <button class="hud-btn active" id="btn-toggle-labels">
+        <span class="icon">🏷</span><span data-zh="名牌" data-en="Labels">名牌</span>
+      </button>
+      <button class="hud-btn active" id="btn-toggle-flows">
+        <span class="icon">⤳</span><span data-zh="協作線" data-en="Flows">協作線</span>
+      </button>
+      <button class="hud-btn" id="btn-toggle-birds">
+        <span class="icon">☖</span><span data-zh="鳥瞰" data-en="TopView">鳥瞰</span>
+      </button>
+      <button class="hud-btn" id="btn-toggle-pause">
+        <span class="icon">⏸</span><span id="txt-pause" data-zh="暫停" data-en="Pause">暫停</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Onboarding Modal -->
+  <div class="modal-overlay" id="help-modal" style="display: none;">
+    <div class="modal-box interactive">
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">歡迎來到山光里政策島！</h3>
+      <p style="font-size: 13px; color: #7a6e67; margin-bottom: 16px;">
+        候選人李昭靜以「看得見的幸福、走得通的巷弄」為理念，將里政藍圖打造成一座微縮模型小島：
+      </p>
+      <div class="modal-step">
+        <div class="modal-step-idx">1</div>
+        <div><b>點擊島嶼與建築</b>：直覺旋轉縮放探索 12 大里政政策與具體量化執行指標。</div>
+      </div>
+      <div class="modal-step">
+        <div class="modal-step-idx">2</div>
+        <div><b>流動協作線與志工</b>：觀察便當送餐、巡守動線、急救箱運送等跨社區互助連結。</div>
+      </div>
+      <div class="modal-step">
+        <div class="modal-step-idx">3</div>
+        <div><b>四時生活日夜切換</b>：晨運、市集到夜巡，點亮不同時段為里民點燃的街角路燈。</div>
+      </div>
+      <button class="btn-chip" id="btn-close-help" style="margin-top: 12px; width: 100%; height: 42px; background: var(--coral); color: #fff; font-weight: 700;">
+        開始探索山光里
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+    import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+    /* =========================================================
+       0. MULBERRY32 PRNG (Deterministic Scene Generation)
+    ========================================================= */
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const rand = mulberry32(20240901);
+
+    // Simple 2D Simplex/Perlin-like noise generator with fixed seed
+    class SimpleNoise {
+      constructor(prng) {
+        this.p = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) this.p[i] = Math.floor(prng() * 256);
+      }
+      noise2D(x, y) {
+        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+        const xf = x - Math.floor(x), yf = y - Math.floor(y);
+        const top = (1 - xf) * this.p[(X + this.p[Y]) & 255] + xf * this.p[(X + 1 + this.p[Y]) & 255];
+        const bot = (1 - xf) * this.p[(X + this.p[(Y+1)&255]) & 255] + xf * this.p[(X + 1 + this.p[(Y+1)&255]) & 255];
+        return ((1 - yf) * top + yf * bot) / 255.0 * 2.0 - 1.0;
+      }
+    }
+    const noise = new SimpleNoise(rand);
+
+    /* =========================================================
+       1. DATA DEFINITIONS (12 Islands, Sub-items, Flows, Days)
+    ========================================================= */
+    const DATA = {
+      islands: [
+        {
+          id: "traffic",
+          name: "巷弄好行島",
+          enName: "Safe Alleys",
+          q: 0, r: 0,
+          desc: "掃除巷弄路障、增設反光鏡與綠底標線型人行道，讓長幼出入更安心。",
+          groundType: "asphalt",
+          items: [
+            { id: "t1", name: "綠斑馬行人友善道", desc: "主幹巷弄畫設連續型綠底標線人行道。", facts: ["新增 1,200m", "事故減 45%"], timeline: "上任半年", model: "traffic" },
+            { id: "t2", name: "微盲彎凸面反射鏡", desc: "盲彎死角更換廣角不銹鋼反光鏡並定期巡擦。", facts: ["裝設 28 處", "月巡查 2 次"], timeline: "1–2 年", model: "crossing" },
+            { id: "t3", name: "微型機車整理格", desc: "重整零碎巷地，整頓佔位廢棄車輛增加停車格。", facts: ["新增 85 格", "拖吊清障 100%"], timeline: "1–2 年", model: "parking" },
+            { id: "t4", name: "轉角夜間發光柱", desc: "夜間辨識轉角安全警示軟桿，減少擦撞事故。", facts: ["佈設 40 柱", "發光續航 12h"], timeline: "上任半年", model: "checkpoint" }
+          ]
+        },
+        {
+          id: "elderly",
+          name: "銀髮樂活島",
+          enName: "Silver Care",
+          q: 1, r: 0,
+          desc: "中央溫暖廚房每日營養供餐、每週健康量測與樂齡學堂。",
+          groundType: "brick",
+          items: [
+            { id: "e1", name: "里鄰暖心共餐堂", desc: "每週一至五產地蔬菜直送熱食健康午餐。", facts: ["日供 120 份", "自付 30 元"], timeline: "上任半年", model: "dining" },
+            { id: "e2", name: "遠距智慧血壓站", desc: "數據直通家屬手機，異常指標即時里幹事通報。", facts: ["設立 4 站", "里民覆蓋 80%"], timeline: "1–2 年", model: "clinic" },
+            { id: "e3", name: "長輩延緩失智桌遊課", desc: "結合社區大學專業師資每週帶領動腦活動。", facts: ["每週 3 堂", "參與逾 200人"], timeline: "1–2 年", model: "stage" },
+            { id: "e4", name: "無障礙如廁改造專案", desc: "協調志工隊輔導弱勢獨居長者家中加裝防跌扶手。", facts: ["預計輔導 45戶", "防跌率 90%"], timeline: "3–4 年", model: "office" }
+          ]
+        },
+        {
+          id: "green",
+          name: "森態綠化島",
+          enName: "Eco Garden",
+          q: 0, r: 1,
+          desc: "閒置邊坡改造可食地景、原生樹苗補植與親水植物步道。",
+          groundType: "cobble",
+          items: [
+            { id: "g1", name: "山光芳香可食花園", desc: "里民認養種植迷迭香、薄荷與四季時蔬。", facts: ["認養箱 60 座", "綠化 450㎡"], timeline: "上任半年", model: "park" },
+            { id: "g2", name: "原生蜜源喬木林", desc: "種植台灣原生欒樹與櫻花，引回蝴蝶與山雀。", facts: ["補植 150 株", "存活率 95%"], timeline: "1–2 年", model: "tree" },
+            { id: "g3", name: "雨水集蓄澆灌站", desc: "利用活動中心屋頂收集天然雨水循環綠美化。", facts: ["儲水 15 噸", "節水 40%"], timeline: "1–2 年", model: "recycling" },
+            { id: "g4", name: "綠蔭林下石桌椅", desc: "提供長幼夏日乘涼聚會的透水磚休憩點。", facts: ["增設 12 組", "全遮光涼蔭"], timeline: "3–4 年", model: "dining" }
+          ]
+        },
+        {
+          id: "safety",
+          name: "安居守望島",
+          enName: "Neighborhood Watch",
+          q: -1, r: 1,
+          desc: "強化巡守隊裝備、死角照明高畫質監控與安心求救鈴聯防。",
+          groundType: "asphalt",
+          items: [
+            { id: "s1", name: "山光夜巡守望亭", desc: "志工巡邏整裝與交接熱點，守護夜歸里民。", facts: ["巡守隊 45 人", "巡查率 100%"], timeline: "上任半年", model: "checkpoint" },
+            { id: "s2", name: "暗巷高解析度雲端天眼", desc: "連網夜視攝影機補齊里內暗角。", facts: ["加裝 32 支", "調閱 5 分鐘出檔"], timeline: "1–2 年", model: "camera" },
+            { id: "s3", name: "太陽能感應爆閃燈", desc: "岔路巷道紅藍警示燈，警醒超速車輛。", facts: ["設置 16 處", "降速 35%"], timeline: "上任半年", model: "crossing" },
+            { id: "s4", name: "志工巡邏電動巡邏車", desc: "輕巧電動機車配備急救箱夜間安靜無噪音巡邏。", facts: ["採購 3 台", "零碳排"], timeline: "1–2 年", model: "traffic" }
+          ]
+        },
+        {
+          id: "recycle",
+          name: "循環淨零島",
+          enName: "Zero Waste",
+          q: -1, r: 0,
+          desc: "黃金資收站點數換生活品、二手小家電維修站與堆肥站。",
+          groundType: "cobble",
+          items: [
+            { id: "r1", name: "黃金回收便利站", desc: "分類紙箱塑膠換取環保洗潔精與實用好禮。", facts: ["每週 2 回", "月收 4.5 噸"], timeline: "上任半年", model: "recycling" },
+            { id: "r2", name: "木匠師傅維修工坊", desc: "推動修繕取代丟棄，二手電扇檯燈妙手回春。", facts: ["修復率 78%", "服務 300 件/年"], timeline: "1–2 年", model: "office" },
+            { id: "r3", name: "廚餘黑金落葉堆肥槽", desc: "生廚餘與落葉發酵成有機肥，回饋花圃認養戶。", facts: ["減廢 15%", "年產 2 噸土"], timeline: "1–2 年", model: "park" }
+          ]
+        },
+        {
+          id: "culture",
+          name: "文化共學島",
+          enName: "Culture & Life",
+          q: 0, r: -1,
+          desc: "廟埕說故事露天電影院、走讀山光歷史與四季藝文節慶。",
+          groundType: "brick",
+          items: [
+            { id: "c1", name: "山光廟埕星空聚場", desc: "夏夜老少咸宜草地電影放映與里民音樂會。", facts: ["季辦 1 場", "場均 180 人"], timeline: "上任半年", model: "stage" },
+            { id: "c2", name: "山林古道走讀牌樓", desc: "復刻早期煤礦與山林水文故事解說導覽牌。", facts: ["設立 6 處", "志工解說 12 場"], timeline: "1–2 年", model: "shrine" },
+            { id: "c3", name: "手作烘焙分享空間", desc: "借用活動中心烹飪教室開辦親子米食文化課。", facts: ["月辦 2 次", "學費全免"], timeline: "1–2 年", model: "dining" }
+          ]
+        },
+        {
+          id: "kids",
+          name: "童趣安育島",
+          enName: "Kids & Play",
+          q: 1, r: -1,
+          desc: "通學步道安全導護、共融無毒小遊具與課後陪讀據點。",
+          groundType: "cobble",
+          items: [
+            { id: "k1", name: "山光安全通學接送道", desc: "國小上下學時段實施導護人車分流保護安全。", facts: ["導護 18 人", "零事故 365 天"], timeline: "上任半年", model: "traffic" },
+            { id: "k2", name: "原木共融攀爬溜滑梯", desc: "汰換老舊生鏽鐵滑梯，改為自然原木安全地墊場。", facts: ["符合 CNS 認證", "容量 30 童"], timeline: "1–2 年", model: "park" },
+            { id: "k3", name: "彩虹課後伴讀小屋", desc: "退休教師與大專志工提供弱勢家庭孩子免費課輔。", facts: ["課輔 25 生", "伴讀 500 小時"], timeline: "上任半年", model: "office" },
+            { id: "k4", name: "幼兒推車專屬停靠區", desc: "公園旁增設遮陽遮雨推車專用泊位。", facts: ["可停 12 台", "防雨防曬"], timeline: "1–2 年", model: "parking" }
+          ]
+        },
+        {
+          id: "pet",
+          name: "毛孩友善島",
+          enName: "Pet Paradise",
+          q: 2, r: -1,
+          desc: "浪浪結紮絕育照顧、公園毛孩敏捷草皮與便便袋補給箱。",
+          groundType: "cobble",
+          items: [
+            { id: "p1", name: "毛孩放繩自在跑跑草地", desc: "雙層防脫逃圍欄與寵物飲水清洗台。", facts: ["面積 220㎡", "安全雙道門"], timeline: "1–2 年", model: "park" },
+            { id: "p2", name: "狗便清潔袋補充箱", desc: "全里散步熱點設置生物可分解環保便袋箱。", facts: ["建置 14 站", "補充 100%"], timeline: "上任半年", model: "recycling" },
+            { id: "p3", name: "TNR 浪浪溫柔絕育專案", desc: "與愛媽志工合作落實誘捕絕育疫苗放回。", facts: ["絕育率 92%", "流浪動物減量"], timeline: "1–2 年", model: "heart" },
+            { id: "p4", name: "里民毛孩狂犬病義診", desc: "協調獸醫師公會到里辦公室提供晶片登記疫苗施打。", facts: ["年辦 2 梯", "施打 150 隻"], timeline: "上任半年", model: "clinic" }
+          ]
+        },
+        {
+          id: "disaster",
+          name: "韌性防災島",
+          enName: "Resilient Defense",
+          q: 2, r: 0,
+          desc: "邊坡土壤感測預警、水患沙包自主站與緊急急救箱配置。",
+          groundType: "asphalt",
+          items: [
+            { id: "d1", name: "山坡即時雨量微感測器", desc: "暴雨時自動連線里民 LINE 發送潛勢區預警。", facts: ["建置 5 處", "提早 40 分警報"], timeline: "1–2 年", model: "camera" },
+            { id: "d2", name: "社區自主防汛沙包站", desc: "易積水低窪處設置快速防水擋板與沙包自取箱。", facts: ["常備 300 包", "吸水膨脹型 50 個"], timeline: "上任半年", model: "checkpoint" },
+            { id: "d3", name: "戶外自動心臟電擊器 AED", desc: "設於 24 小時明亮遮雨亭，全里急救黃金 4 分鐘。", facts: ["新增 3 台", "認證 CPR 志工 80 人"], timeline: "上任半年", model: "heart" }
+          ]
+        },
+        {
+          id: "smart",
+          name: "智慧里民島",
+          enName: "Smart Connect",
+          q: 1, r: 1,
+          desc: "山光里 LINE 官方報修小幫手、里民電子廣播牆與 Wi-Fi 熱點。",
+          groundType: "asphalt",
+          items: [
+            { id: "sm1", name: "LINE 隨手拍一鍵報修", desc: "路燈不亮、路面凹陷拍照即刻派工追蹤進度。", facts: ["24h 內回覆", "結案率 98%"], timeline: "上任半年", model: "speaker" },
+            { id: "sm2", name: "節能電子公佈欄", desc: "取代凌亂傳統紙張公告，即時氣象與市政福利。", facts: ["設置 4 塊", "省紙 12,000 張"], timeline: "1–2 年", model: "office" },
+            { id: "sm3", name: "社區戶外免費 Wi-Fi", desc: "活動廣場與公園綠地提供穩定免費無線網路。", facts: ["覆蓋率 90%", "同時連線 200 人"], timeline: "1–2 年", model: "camera" }
+          ]
+        },
+        {
+          id: "care",
+          name: "暖心關懷島",
+          enName: "Care Network",
+          q: 0, r: 2,
+          desc: "弱勢單親急難救助金、獨居愛心送暖便當與寒冬物資站。",
+          groundType: "brick",
+          items: [
+            { id: "cr1", name: "獨居長者暖心餐點直送", desc: "志工親自按鈴送餐兼確認身體安康狀況。", facts: ["日訪 35 戶", "365 天無休"], timeline: "上任半年", model: "heart" },
+            { id: "cr2", name: "山光愛心愛心實物糧倉", desc: "募集善心企業乾糧米麵，即時發放應急家庭。", facts: ["常備 50 份", "幫助 120 戶次"], timeline: "上任半年", model: "recycling" },
+            { id: "cr3", name: "法律與心理免費諮詢日", desc: "專業律師里民日駐點諮詢，解開產權糾紛與家務煩惱。", facts: ["月辦 2 場", "解答 80 件"], timeline: "1–2 年", model: "office" }
+          ]
+        },
+        {
+          id: "office",
+          name: "里民客廳島",
+          enName: "Ward Center",
+          q: -1, r: 2,
+          desc: "昭靜里民服務處、泡茶傾聽民意交流站與民主提案信箱。",
+          groundType: "brick",
+          items: [
+            { id: "of1", name: "山光里民大客廳泡茶棧", desc: "不分黨派天天開門，一杯熱茶親自聽取里民建言。", facts: ["平日 08-20", "李昭靜親自坐鎮"], timeline: "上任半年", model: "office" },
+            { id: "of2", name: "公民提案小額參與式預算", desc: "每年提撥經費由里民直接票選想改建的公共空間。", facts: ["預算 30 萬", "里民票選 100%"], timeline: "1–2 年", model: "stage" },
+            { id: "of3", name: "工具圖書免費互借站", desc: "電鑽、高枝剪、梯子免自購，鄰里共享珍惜資源。", facts: ["常備工具 45 種", "借閱破千次"], timeline: "上任半年", model: "sweeper" }
+          ]
+        }
+      ],
+      collaborations: [
+        { id: "collab1", from: "elderly", to: "care", item: "愛心熱便當", role: "送餐志工隊", level: "official" },
+        { id: "collab2", from: "green", to: "recycle", item: "廚餘堆肥泥", role: "環保農耕隊", level: "official" },
+        { id: "collab3", from: "safety", to: "traffic", item: "反光鏡擦拭組", role: "巡守機動隊", level: "thematic" },
+        { id: "collab4", from: "disaster", to: "elderly", item: "行動急救箱", role: "防災急救員", level: "official" },
+        { id: "collab5", from: "kids", to: "culture", item: "說故事道具箱", role: "彩虹課輔志工", level: "thematic" },
+        { id: "collab6", from: "office", to: "smart", item: "里民提案清單", role: "李昭靜與青年里幹事", level: "official" },
+        { id: "collab7", from: "pet", to: "green", item: "除草清消桶", role: "毛孩志願者", level: "pending" }
+      ],
+      dayCycles: [
+        { id: "morning", name: "晨運時刻", min: 360, highlights: ["e1", "g1", "k1", "cr1"] },
+        { id: "day", name: "熱絡早市", min: 600, highlights: ["t1", "e1", "r1", "c1", "of1", "sm1"] },
+        { id: "dusk", name: "黃昏放學", min: 1020, facts: "人車分流放學", highlights: ["k1", "k2", "p1", "s1"] },
+        { id: "night", name: "平安夜巡", min: 1260, highlights: ["s1", "s2", "t4", "d3", "of1"] }
+      ]
+    };
+
+    /* =========================================================
+       2. MATH, HEX GRID & PROCEDURAL GROUND TEXTURES
+    ========================================================= */
+    const R = 2.02;
+    const SPACING = 2.28;
+    const TOP = 0.65;
+    const WATER_Y = -0.18;
+
+    function axialToWorld(q, r) {
+      const x = Math.sqrt(3) * SPACING * (q + r / 2);
+      const z = 1.5 * SPACING * r;
+      return new THREE.Vector3(x, TOP, z);
+    }
+
+    // Build procedural 256x256 canvas textures
+    function createGroundCanvasTexture(type) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 256; cvs.height = 256;
+      const ctx = cvs.getContext('2d');
+
+      if (type === 'brick') {
+        ctx.fillStyle = '#eedcd0';
+        ctx.fillRect(0, 0, 256, 256);
+        ctx.fillStyle = '#debeaa';
+        const w = 32, h = 16;
+        for (let y = 0; y < 256; y += h) {
+          const shift = (y / h) % 2 === 0 ? 0 : w / 2;
+          for (let x = -w; x < 256; x += w) {
+            ctx.strokeRect(x + shift, y, w, h);
+            if ((x + y) % 5 === 0) {
+              ctx.fillRect(x + shift + 2, y + 2, w - 4, h - 4);
+            }
+          }
+        }
+      } else if (type === 'asphalt') {
+        ctx.fillStyle = '#656360';
+        ctx.fillRect(0, 0, 256, 256);
+        ctx.fillStyle = '#7a7774';
+        for (let i = 0; i < 350; i++) {
+          ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+        }
+        ctx.strokeStyle = '#d9d0be';
+        ctx.setLineDash([12, 12]);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(128, 128, 70, 0, Math.PI * 2);
+        ctx.stroke();
+      } else { // cobble
+        ctx.fillStyle = '#dfd6c8';
+        ctx.fillRect(0, 0, 256, 256);
+        ctx.fillStyle = '#b8aa97';
+        for (let i = 0; i < 90; i++) {
+          ctx.beginPath();
+          ctx.arc(Math.random() * 256, Math.random() * 256, 6 + Math.random() * 7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    const groundTextures = {
+      brick: createGroundCanvasTexture('brick'),
+      asphalt: createGroundCanvasTexture('asphalt'),
+      cobble: createGroundCanvasTexture('cobble')
+    };
+
+    /* =========================================================
+       3. THREE.JS SCENE SETUP, SHADERS, LIGHTS & DAY CYCLE
+    ========================================================= */
+    let renderer, cssRenderer, scene, camera, controls;
+    let skyMesh, waterMesh, sunLight, fillLight, hemiLight, terrainMesh;
+    let isBirdsEye = false;
+    let isPaused = false;
+    let showLabels = true;
+    let showFlows = true;
+    let isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let currentLang = new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'zh';
+
+    let clockMinutes = 600; // start 10:00 AM
+    let activeDayCycle = DATA.dayCycles[1];
+
+    // Day/Night Keyframes from prompt
+    const DAY_KEYFRAMES = [
+      { min: 0,    top: 0x1e2c58, hor: 0x3f4f80, sunC: 0xb4c2ff, sunI: 1.15, hSky: 0x94a2d8, hGnd: 0x64566a, hI: 1.85, night: 1.0,  wat: 0x5a88b2 },
+      { min: 300,  top: 0x26365f, hor: 0x4c5688, sunC: 0xb8c4ff, sunI: 1.0,  hSky: 0x96a4da, hGnd: 0x66586c, hI: 1.85, night: 1.0,  wat: 0x5c8ab4 },
+      { min: 360,  top: 0x7f8fc4, hor: 0xf6c3a6, sunC: 0xffb48a, sunI: 1.3,  hSky: 0xf3c6b5, hGnd: 0x6b5a5a, hI: 1.1,  night: 0.55, wat: 0x8fb7c4 },
+      { min: 450,  top: 0xa9d1ea, hor: 0xfbe6d3, sunC: 0xffe2c4, sunI: 2.4,  hSky: 0xeaf2f6, hGnd: 0x8a7a68, hI: 1.25, night: 0.0,  wat: 0x9fcfd6 },
+      { min: 720,  top: 0x9fd0ec, hor: 0xf4eee3, sunC: 0xfff1de, sunI: 2.9,  hSky: 0xeef6fa, hGnd: 0x8f8270, hI: 1.35, night: 0.0,  wat: 0xa9d8db },
+      { min: 960,  top: 0xa6cfe6, hor: 0xf8e7d2, sunC: 0xffe3c0, sunI: 2.5,  hSky: 0xf1efe8, hGnd: 0x8a7a66, hI: 1.25, night: 0.0,  wat: 0x9fcbd2 },
+      { min: 1065, top: 0x8b8fc4, hor: 0xf7b98f, sunC: 0xff9f6a, sunI: 1.8,  hSky: 0xf6d2bc, hGnd: 0x7d6660, hI: 1.2,  night: 0.3,  wat: 0x93a9bd },
+      { min: 1140, top: 0x5a5e9e, hor: 0xd99aa6, sunC: 0xff9a7a, sunI: 1.3,  hSky: 0xc0b2e0, hGnd: 0x655868, hI: 1.35, night: 0.75, wat: 0x6a7cab },
+      { min: 1260, top: 0x22325f, hor: 0x445488, sunC: 0xc0ccff, sunI: 1.2,  hSky: 0x98a8dc, hGnd: 0x685a6e, hI: 1.9,  night: 1.0,  wat: 0x5a88b2 },
+      { min: 1440, top: 0x1e2c58, hor: 0x3f4f80, sunC: 0xb4c2ff, sunI: 1.15, hSky: 0x94a2d8, hGnd: 0x64566a, hI: 1.85, night: 1.0,  wat: 0x5a88b2 }
+    ];
+
+    function getInterpolatedDayFrame(m) {
+      const min = m % 1440;
+      let i = 0;
+      while (i < DAY_KEYFRAMES.length - 1 && DAY_KEYFRAMES[i+1].min <= min) i++;
+      const k1 = DAY_KEYFRAMES[i];
+      const k2 = DAY_KEYFRAMES[i+1] || DAY_KEYFRAMES[0];
+      const span = (k2.min === 0 ? 1440 : k2.min) - k1.min;
+      const t = span <= 0 ? 0 : (min - k1.min) / span;
+
+      const cTop = new THREE.Color(k1.top).lerp(new THREE.Color(k2.top), t);
+      const cHor = new THREE.Color(k1.hor).lerp(new THREE.Color(k2.hor), t);
+      const cSun = new THREE.Color(k1.sunC).lerp(new THREE.Color(k2.sunC), t);
+      const cHSky = new THREE.Color(k1.hSky).lerp(new THREE.Color(k2.hSky), t);
+      const cHGnd = new THREE.Color(k1.hGnd).lerp(new THREE.Color(k2.hGnd), t);
+      const cWat = new THREE.Color(k1.wat).lerp(new THREE.Color(k2.wat), t);
+
+      return {
+        top: cTop, hor: cHor, sunColor: cSun,
+        sunI: THREE.MathUtils.lerp(k1.sunI, k2.sunI, t),
+        hSky: cHSky, hGnd: cHGnd,
+        hI: THREE.MathUtils.lerp(k1.hI, k2.hI, t),
+        night: THREE.MathUtils.lerp(k1.night, k2.night, t),
+        wat: cWat
+      };
+    }
+
+    /* =========================================================
+       4. INSTANCED BUILDING PARTS SYSTEM (KIT)
+    ========================================================= */
+    const buildingKitEntries = []; // { kind, matrix, baseColor, id, islandId }
+    const buildingArchetypes = {};
+
+    const sharedGeometries = {
+      box: new THREE.BoxGeometry(1, 1, 1),
+      rbox: new RoundedBoxGeometry(1, 1, 1, 2, 0.12),
+      cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 14),
+      cone: new THREE.ConeGeometry(0.5, 1, 14),
+      sphere: new THREE.SphereGeometry(0.5, 14, 12),
+      ico: new THREE.IcosahedronGeometry(0.5, 1),
+      hip: new THREE.ConeGeometry(0.707, 0.5, 4).rotateY(Math.PI / 4),
+      torus: new THREE.TorusGeometry(0.5, 0.16, 8, 16),
+      prism: new THREE.CylinderGeometry(0.5, 0.5, 1, 3),
+      glowbox: new THREE.BoxGeometry(1, 1, 1),
+      glowsphere: new THREE.SphereGeometry(0.4, 12, 10)
+    };
+
+    const solidClayMaterial = new THREE.MeshStandardMaterial({
+      roughness: 0.78,
+      metalness: 0.02
+    });
+
+    const glowClayMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: new THREE.Color(0xffc777),
+      emissiveIntensity: 0.6,
+      roughness: 0.5
+    });
+
+    let instancedMeshGroups = {}; // kind -> InstancedMesh
+
+    function addPart(kind, mtx, colorHex, id = null, islandId = null) {
+      // Jitter scale slightly to avoid coplanar z-fighting
+      const jitter = 1.0 + (rand() - 0.5) * 0.012;
+      const m = mtx.clone();
+      m.scale(new THREE.Vector3(jitter, jitter, jitter));
+      buildingKitEntries.push({ kind, matrix: m, color: new THREE.Color(colorHex), id, islandId });
+    }
+
+    /* Build cute clay archetypes */
+    function buildModelArchetype(modelKind, rootMtx, id, islandId) {
+      const helper = (kind, pos, rot, scl, col) => {
+        const m = new THREE.Matrix4();
+        m.makeRotationFromEuler(new THREE.Euler(rot[0], rot[1], rot[2]));
+        m.setPosition(pos[0], pos[1], pos[2]);
+        m.scale(new THREE.Vector3(scl[0], scl[1], scl[2]));
+        const combined = rootMtx.clone().multiply(m);
+        addPart(kind, combined, col, id, islandId);
+      };
+
+      // Clay palette colors
+      const coral = 0xdb6a41;
+      const ink = 0x292424;
+      const cream = 0xfff7f0;
+      const yellow = 0xfdea8d;
+      const stone = 0xc8b8aa;
+      const green = 0x74866c;
+      const teal = 0x448292;
+      const wood = 0xba8c66;
+
+      switch(modelKind) {
+        case "office": // Little ward office + tea table
+          helper("rbox", [0, 0.35, 0], [0, 0, 0], [0.8, 0.65, 0.7], cream);
+          helper("hip", [0, 0.85, 0], [0, 0, 0], [1.05, 0.45, 0.95], coral);
+          helper("box", [0, 0.28, 0.36], [0, 0, 0], [0.22, 0.42, 0.05], wood);
+          helper("glowbox", [0.24, 0.4, 0.36], [0, 0, 0], [0.18, 0.18, 0.04], yellow);
+          helper("cylinder", [0.42, 0.15, 0.35], [0, 0, 0], [0.35, 0.28, 0.35], wood); // tea table
+          break;
+        case "checkpoint": // Watch pavilion with alert beacon
+          helper("cylinder", [0, 0.3, 0], [0, 0, 0], [0.5, 0.6, 0.5], cream);
+          helper("cone", [0, 0.72, 0], [0, 0, 0], [0.7, 0.35, 0.7], teal);
+          helper("glowsphere", [0, 0.98, 0], [0, 0, 0], [0.2, 0.2, 0.2], yellow);
+          helper("box", [0, 0.08, 0.3], [0, 0, 0], [0.7, 0.15, 0.1], coral);
+          break;
+        case "park": // Park with playground slide & trees
+          helper("cylinder", [-0.2, 0.15, 0], [0, 0, 0], [0.4, 0.15, 0.4], stone);
+          helper("ico", [-0.2, 0.5, 0], [0, rand()*3, 0], [0.55, 0.65, 0.55], green);
+          helper("box", [0.25, 0.3, -0.1], [0, 0, -0.4], [0.18, 0.7, 0.35], yellow); // slide
+          helper("box", [0.12, 0.12, 0.3], [0, 0.3, 0], [0.45, 0.12, 0.18], wood); // bench
+          break;
+        case "recycling": // Resource sorting carts & bins
+          helper("box", [-0.22, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], green);
+          helper("box", [0, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], yellow);
+          helper("box", [0.22, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], teal);
+          helper("torus", [0, 0.1, 0.25], [Math.PI/2, 0, 0], [0.35, 0.35, 0.35], stone);
+          break;
+        case "traffic": // Traffic mini crossing & safety bollard
+          helper("box", [0, 0.04, 0], [0, 0, 0], [0.7, 0.05, 0.6], ink);
+          helper("box", [-0.2, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
+          helper("box", [0.0, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
+          helper("box", [0.2, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
+          helper("cylinder", [0.35, 0.35, 0.25], [0, 0, 0], [0.08, 0.7, 0.08], coral);
+          break;
+        case "stage": // Community stage / open screen
+          helper("rbox", [0, 0.15, 0], [0, 0, 0], [0.85, 0.2, 0.7], wood);
+          helper("box", [0, 0.5, -0.28], [0, 0, 0], [0.8, 0.55, 0.08], cream);
+          helper("glowsphere", [-0.35, 0.78, -0.2], [0, 0, 0], [0.12, 0.12, 0.12], yellow);
+          helper("glowsphere", [0.35, 0.78, -0.2], [0, 0, 0], [0.12, 0.12, 0.12], yellow);
+          break;
+        case "shrine": // Cultural mini torii / archway
+          helper("cylinder", [-0.3, 0.45, 0], [0, 0, 0], [0.1, 0.9, 0.1], coral);
+          helper("cylinder", [0.3, 0.45, 0], [0, 0, 0], [0.1, 0.9, 0.1], coral);
+          helper("box", [0, 0.88, 0], [0, 0, 0], [0.85, 0.15, 0.18], coral);
+          helper("hip", [0, 0.98, 0], [0, 0, 0], [0.95, 0.15, 0.24], yellow);
+          break;
+        case "clinic": // Health station
+          helper("rbox", [0, 0.35, 0], [0, 0, 0], [0.75, 0.65, 0.65], cream);
+          helper("hip", [0, 0.82, 0], [0, 0, 0], [0.95, 0.35, 0.85], teal);
+          helper("box", [0, 0.4, 0.34], [0, 0, 0], [0.26, 0.08, 0.04], coral);
+          helper("box", [0, 0.4, 0.34], [0, 0, 0], [0.08, 0.26, 0.04], coral);
+          break;
+        case "dining": // Dining table with cute clay food bowls
+          helper("cylinder", [0, 0.2, 0], [0, 0, 0], [0.65, 0.35, 0.65], wood);
+          helper("sphere", [-0.15, 0.42, -0.1], [0, 0, 0], [0.15, 0.1, 0.15], coral);
+          helper("sphere", [0.15, 0.42, 0.1], [0, 0, 0], [0.15, 0.1, 0.15], yellow);
+          helper("cylinder", [-0.4, 0.12, 0], [0, 0, 0], [0.2, 0.22, 0.2], stone);
+          helper("cylinder", [0.4, 0.12, 0], [0, 0, 0], [0.2, 0.22, 0.2], stone);
+          break;
+        case "heart": // Big giant warm heart sculpture
+          helper("cylinder", [0, 0.15, 0], [0, 0, 0], [0.55, 0.25, 0.55], stone);
+          helper("sphere", [-0.16, 0.55, 0], [0, 0, 0.4], [0.35, 0.35, 0.28], coral);
+          helper("sphere", [0.16, 0.55, 0], [0, 0, -0.4], [0.35, 0.35, 0.28], coral);
+          helper("cone", [0, 0.38, 0], [Math.PI, 0, 0], [0.45, 0.45, 0.28], coral);
+          break;
+        case "camera": // Cloud CCTV tower
+          helper("cylinder", [0, 0.5, 0], [0, 0, 0], [0.09, 1.0, 0.09], stone);
+          helper("box", [0, 0.95, 0.12], [0.3, 0, 0], [0.15, 0.15, 0.3], cream);
+          helper("glowsphere", [0, 0.92, 0.26], [0, 0, 0], [0.08, 0.08, 0.08], teal);
+          break;
+        case "speaker": // Smart megaphone broadcaster
+          helper("cylinder", [0, 0.45, 0], [0, 0, 0], [0.08, 0.9, 0.08], stone);
+          helper("cone", [0, 0.88, 0], [0, 0, -Math.PI/2], [0.3, 0.4, 0.3], yellow);
+          helper("sphere", [-0.15, 0.88, 0], [0, 0, 0], [0.12, 0.12, 0.12], coral);
+          break;
+        case "sweeper": // Tool station
+          helper("box", [0, 0.25, 0], [0, 0, 0], [0.65, 0.45, 0.45], teal);
+          helper("cylinder", [0.15, 0.6, 0], [0.2, 0, 0], [0.04, 0.7, 0.04], wood);
+          helper("cone", [0.22, 0.9, 0], [0, 0, 0], [0.2, 0.3, 0.1], yellow);
+          break;
+        default:
+          helper("rbox", [0, 0.3, 0], [0, 0, 0], [0.6, 0.6, 0.6], stone);
+      }
+    }
+
+    // Street decor: lanterns & trees around hex perimeter
+    function buildIslandStreetDecor(center, islandId, decorSeed) {
+      const pr = mulberry32(decorSeed);
+      for (let i = 0; i < 6; i++) {
+        const ang = Math.PI / 6 + i * (Math.PI / 3);
+        const lx = center.x + Math.cos(ang) * (R - 0.22);
+        const lz = center.z + Math.sin(ang) * (R - 0.22);
+
+        // Street Lantern
+        const mtx = new THREE.Matrix4().setPosition(lx, TOP, lz);
+        addPart("cylinder", mtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.35, 0).scale(new THREE.Vector3(0.06, 0.7, 0.06))), 0x5a514d, null, islandId);
+        addPart("glowsphere", mtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.72, 0).scale(new THREE.Vector3(0.18, 0.18, 0.18))), 0xffc777, null, islandId);
+
+        // Edge Tree / Planter
+        if (pr() > 0.3) {
+          const eAng = ang + Math.PI / 6;
+          const tx = center.x + Math.cos(eAng) * (R - 0.35);
+          const tz = center.z + Math.sin(eAng) * (R - 0.35);
+          const tMtx = new THREE.Matrix4().setPosition(tx, TOP, tz);
+          const treeCol = [0x789868, 0xe295aa, 0x82b472, 0x668660][Math.floor(pr() * 4)];
+          addPart("cylinder", tMtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.15, 0).scale(new THREE.Vector3(0.08, 0.3, 0.08))), 0x9b7252, null, islandId);
+          addPart("ico", tMtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.45 + pr() * 0.15, 0).scale(new THREE.Vector3(0.45, 0.55, 0.45))), treeCol, null, islandId);
+        }
+      }
+    }
+
+    // Assemble entire Kit into InstancedMesh draw calls
+    function compileBuildingKit() {
+      const groups = {};
+      buildingKitEntries.forEach(entry => {
+        if (!groups[entry.kind]) groups[entry.kind] = [];
+        groups[entry.kind].push(entry);
+      });
+
+      for (const kind in groups) {
+        const list = groups[kind];
+        const geo = sharedGeometries[kind];
+        const mat = (kind.startsWith("glow")) ? glowClayMaterial.clone() : solidClayMaterial.clone();
+        const instMesh = new THREE.InstancedMesh(geo, mat, list.length);
+        instMesh.castShadow = true;
+        instMesh.receiveShadow = true;
+
+        for (let i = 0; i < list.length; i++) {
+          instMesh.setMatrixAt(i, list[i].matrix);
+          instMesh.setColorAt(i, list[i].color);
+          list[i].instIndex = i;
+          list[i].ownerMesh = instMesh;
+        }
+        instMesh.instanceMatrix.needsUpdate = true;
+        if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+        scene.add(instMesh);
+        instancedMeshGroups[kind] = { mesh: instMesh, list: list };
+      }
+    }
+
+    /* =========================================================
+       5. HEX ISLANDS, BRIDGES & PATHFINDING NETWORK
+    ========================================================= */
+    const islandCenters = {}; // islandId -> Vector3
+    const pathNodes = [];    // { id, pos: Vector3, neighbors: [nodeId] }
+    const islandNodeMap = {}; // islandId -> [nodeIds]
+
+    function buildIslandsAndBridges() {
+      DATA.islands.forEach((isl, idx) => {
+        const center = axialToWorld(isl.q, isl.r);
+        islandCenters[isl.id] = center;
+
+        // Island Hex Top Base
+        const hexGeo = new THREE.CircleGeometry(R - 0.05, 6);
+        hexGeo.rotateZ(Math.PI / 6);
+        hexGeo.rotateX(-Math.PI / 2);
+
+        const tex = groundTextures[isl.groundType] || groundTextures.brick;
+        const hexMat = new THREE.MeshStandardMaterial({
+          map: tex,
+          roughness: 0.92,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        });
+        const hexMesh = new THREE.Mesh(hexGeo, hexMat);
+        hexMesh.position.copy(center);
+        hexMesh.receiveShadow = true;
+        hexMesh.userData = { isIsland: true, islandId: isl.id };
+        scene.add(hexMesh);
+
+        // Island Walkway Border Ring
+        const ringGeo = new THREE.RingGeometry(R - 0.32, R - 0.04, 6);
+        ringGeo.rotateZ(Math.PI / 6);
+        ringGeo.rotateX(-Math.PI / 2);
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0xe4d6c3, roughness: 0.88 });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        ringMesh.position.set(center.x, center.y + 0.002, center.z);
+        ringMesh.receiveShadow = true;
+        scene.add(ringMesh);
+
+        // Outer Water Foam Ring
+        const foamGeo = new THREE.RingGeometry(R + 0.05, R + 0.22, 6);
+        foamGeo.rotateZ(Math.PI / 6);
+        foamGeo.rotateX(-Math.PI / 2);
+        const foamMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
+        const foamMesh = new THREE.Mesh(foamGeo, foamMat);
+        foamMesh.position.set(center.x, WATER_Y + 0.01, center.z);
+        scene.add(foamMesh);
+
+        // Island Side Cliff (clay cylinder downward to water)
+        const cliffGeo = new THREE.CylinderGeometry(R - 0.06, R - 0.08, TOP - WATER_Y, 6);
+        cliffGeo.rotateY(Math.PI / 6);
+        const cliffMat = new THREE.MeshStandardMaterial({ color: 0xb59e89, roughness: 0.95 });
+        const cliffMesh = new THREE.Mesh(cliffGeo, cliffMat);
+        cliffMesh.position.set(center.x, (TOP + WATER_Y) / 2, center.z);
+        cliffMesh.receiveShadow = true;
+        scene.add(cliffMesh);
+
+        // Street decor & items layout
+        buildIslandStreetDecor(center, isl.id, 100 + idx);
+
+        // Layout items on the hex island
+        // Main building archetype placed at (0, -0.58)
+        const mtxMain = new THREE.Matrix4().setPosition(center.x, TOP, center.z - 0.58).scale(new THREE.Vector3(1.15, 1.15, 1.15));
+        const mainItem = isl.items[0];
+        buildModelArchetype(mainItem.model, mtxMain, mainItem.id, isl.id);
+
+        // Remaining sub-items in staggered spots within inradius 1.36
+        const subItems = isl.items.slice(1);
+        const itemSpacing = subItems.length > 3 ? 0.46 : 0.58;
+        subItems.forEach((sub, sIdx) => {
+          const row = Math.floor(sIdx / 2);
+          const col = sIdx % 2;
+          const ox = (col - 0.5) * (itemSpacing * 1.55);
+          const oz = 0.25 + row * (itemSpacing * 1.15);
+          const sMtx = new THREE.Matrix4().setPosition(center.x + ox, TOP, center.z + oz).scale(new THREE.Vector3(0.78, 0.78, 0.78));
+          buildModelArchetype(sub.model, sMtx, sub.id, isl.id);
+        });
+
+        // 12 Pedestrian Path Nodes (6 corners + 6 edge centers)
+        const islandNodes = [];
+        for (let i = 0; i < 6; i++) {
+          const cornerAng = Math.PI / 6 + i * (Math.PI / 3);
+          const midAng = cornerAng + Math.PI / 6;
+          const cp = new THREE.Vector3(center.x + Math.cos(cornerAng) * (R - 0.18), TOP + 0.02, center.z + Math.sin(cornerAng) * (R - 0.18));
+          const mp = new THREE.Vector3(center.x + Math.cos(midAng) * (R - 0.24), TOP + 0.02, center.z + Math.sin(midAng) * (R - 0.24));
+
+          const cId = `${isl.id}_c_${i}`;
+          const mId = `${isl.id}_m_${i}`;
+          pathNodes.push({ id: cId, pos: cp, neighbors: [] });
+          pathNodes.push({ id: mId, pos: mp, neighbors: [] });
+          islandNodes.push(cId, mId);
+        }
+
+        // Connect path ring
+        for (let i = 0; i < 12; i++) {
+          const n1 = islandNodes[i];
+          const n2 = islandNodes[(i + 1) % 12];
+          getNode(n1).neighbors.push(n2);
+          getNode(n2).neighbors.push(n1);
+        }
+        islandNodeMap[isl.id] = islandNodes;
+
+        // CSS2D Island Name Badge
+        const badgeDiv = document.createElement('div');
+        badgeDiv.className = 'css2d-island-pill';
+        badgeDiv.innerText = `${(idx + 1).toString().padStart(2, '0')} ${isl.name}`;
+        badgeDiv.dataset.islandId = isl.id;
+        badgeDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectIsland(isl.id);
+        });
+        const badgeLabel = new CSS2DObject(badgeDiv);
+        badgeLabel.position.set(center.x, TOP + 0.35, center.z + R - 0.1);
+        scene.add(badgeLabel);
+      });
+
+      // Build arched bridges between neighboring islands
+      const builtBridges = new Set();
+      DATA.islands.forEach(islA => {
+        DATA.islands.forEach(islB => {
+          if (islA.id === islB.id) return;
+          const key = [islA.id, islB.id].sort().join('--');
+          if (builtBridges.has(key)) return;
+
+          const pA = islandCenters[islA.id];
+          const pB = islandCenters[islB.id];
+          const dist = pA.distanceTo(pB);
+
+          // Neighbors in hex grid have distance approx SPACING * sqrt(3) ~ 3.95
+          if (dist > 0.5 && dist < SPACING * 1.8) {
+            builtBridges.add(key);
+            createArchedBridge(islA.id, islB.id, pA, pB);
+          }
+        });
+      });
+    }
+
+    function getNode(id) {
+      return pathNodes.find(n => n.id === id);
+    }
+
+    // Build Cute 9-plank arched bridge
+    function createArchedBridge(idA, idB, posA, posB) {
+      const mid = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
+      const dir = new THREE.Vector3().subVectors(posB, posA).normalize();
+      const length = posA.distanceTo(posB) - (R * 1.5);
+      const span = Math.max(1.1, length);
+
+      // Find closest edge mid nodes on both islands to link graphs
+      let bestA = null, minDistA = 999;
+      islandNodeMap[idA].forEach(nId => {
+        const d = getNode(nId).pos.distanceTo(mid);
+        if (d < minDistA) { minDistA = d; bestA = nId; }
+      });
+      let bestB = null, minDistB = 999;
+      islandNodeMap[idB].forEach(nId => {
+        const d = getNode(nId).pos.distanceTo(mid);
+        if (d < minDistB) { minDistB = d; bestB = nId; }
+      });
+
+      if (bestA && bestB) {
+        getNode(bestA).neighbors.push(bestB);
+        getNode(bestB).neighbors.push(bestA);
+      }
+
+      // Generate 9 curved wooden planks
+      const bridgeGroup = new THREE.Group();
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0xb48560, roughness: 0.82 });
+      const railMat = new THREE.MeshStandardMaterial({ color: 0xdb6a41, roughness: 0.7 });
+
+      const planksCount = 9;
+      const ang = Math.atan2(dir.z, dir.x);
+
+      for (let i = 0; i < planksCount; i++) {
+        const t = (i / (planksCount - 1)) - 0.5;
+        const plankDist = t * span;
+        const archY = TOP + Math.sin((i / (planksCount - 1)) * Math.PI) * 0.12 - 0.02;
+
+        const plankGeo = new THREE.BoxGeometry(span / planksCount * 0.88, 0.05, 0.5);
+        const plank = new THREE.Mesh(plankGeo, woodMat);
+        plank.position.set(mid.x + dir.x * plankDist, archY, mid.z + dir.z * plankDist);
+        plank.rotation.y = -ang;
+        plank.castShadow = true;
+        plank.receiveShadow = true;
+        bridgeGroup.add(plank);
+      }
+      scene.add(bridgeGroup);
+    }
+
+    // Dijkstra Pathfinding between waypoint nodes
+    function dijkstra(startId, endId) {
+      const distances = {};
+      const prev = {};
+      const unvisited = new Set();
+
+      pathNodes.forEach(node => {
+        distances[node.id] = Infinity;
+        unvisited.add(node.id);
+      });
+      distances[startId] = 0;
+
+      while (unvisited.size > 0) {
+        let curr = null, minDist = Infinity;
+        unvisited.forEach(nodeId => {
+          if (distances[nodeId] < minDist) {
+            minDist = distances[nodeId];
+            curr = nodeId;
+          }
+        });
+
+        if (!curr || distances[curr] === Infinity) break;
+        if (curr === endId) break;
+        unvisited.delete(curr);
+
+        const currNode = getNode(curr);
+        currNode.neighbors.forEach(nbrId => {
+          if (!unvisited.has(nbrId)) return;
+          const alt = distances[curr] + currNode.pos.distanceTo(getNode(nbrId).pos);
+          if (alt < distances[nbrId]) {
+            distances[nbrId] = alt;
+            prev[nbrId] = curr;
+          }
+        });
+      }
+
+      const path = [];
+      let u = endId;
+      while (prev[u]) {
+        path.unshift(u);
+        u = prev[u];
+      }
+      if (u === startId) path.unshift(startId);
+      return path.map(id => getNode(id).pos.clone());
+    }
+
+    /* =========================================================
+       6. CHARACTERS (WALKERS), FLOW LINES & LOGS
+    ========================================================= */
+    const walkers = [];
+    let flowLines = [];
+
+    // Chibi Walker Instanced Meshes
+    let walkerMeshParts = {};
+
+    function initWalkerKit() {
+      const walkerCap = 100;
+      walkerMeshParts.heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 12, 10), solidClayMaterial, walkerCap);
+      walkerMeshParts.bodies = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.08, 0.16, 10), solidClayMaterial, walkerCap);
+      walkerMeshParts.legs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.025, 0.025, 0.12, 8), solidClayMaterial, walkerCap * 2);
+
+      for (const k in walkerMeshParts) {
+        walkerMeshParts[k].instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        scene.add(walkerMeshParts[k]);
+      }
+    }
+
+    // Build Tube collaboration flow lines
+    function initCollaborationFlows() {
+      DATA.collaborations.forEach(collab => {
+        const startNodes = islandNodeMap[collab.from];
+        const endNodes = islandNodeMap[collab.to];
+        if (!startNodes || !endNodes) return;
+
+        const pathPoints = dijkstra(startNodes[0], endNodes[0]);
+        if (pathPoints.length < 2) return;
+
+        // Smooth curve
+        const curve = new THREE.CatmullRomCurve3(pathPoints);
+        const tubeGeo = new THREE.TubeGeometry(curve, Math.max(20, pathPoints.length * 8), 0.038, 8, false);
+
+        // Custom Dash Flow Shader
+        const flowMat = new THREE.ShaderMaterial({
+          transparent: true,
+          uniforms: {
+            uTime: { value: 0 },
+            uColor: { value: new THREE.Color(0xdb6a41) },
+            uType: { value: collab.level === 'official' ? 1.0 : (collab.level === 'thematic' ? 2.0 : 3.0) }
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform float uTime;
+            uniform vec3 uColor;
+            uniform float uType;
+            varying vec2 vUv;
+            void main() {
+              float u = vUv.x * 35.0 - uTime * 2.2;
+              float f = fract(u);
+              if (uType > 2.5) { // pending (dots)
+                if (f > 0.35) discard;
+              } else if (uType > 1.5) { // thematic (dash)
+                if (f > 0.6) discard;
+              }
+              gl_FragColor = vec4(uColor, 0.85);
+            }
+          `
+        });
+
+        const tubeMesh = new THREE.Mesh(tubeGeo, flowMat);
+        tubeMesh.userData = { isFlow: true, collab };
+        tubeMesh.visible = showFlows;
+        scene.add(tubeMesh);
+        flowLines.push({ mesh: tubeMesh, collab, curve, material: flowMat });
+
+        // Add 2-3 walkers for this flow
+        for (let i = 0; i < 2; i++) {
+          createWalkerOnCurve(curve, collab, i * 0.5);
+        }
+      });
+    }
+
+    function createWalkerOnCurve(curve, collab, startT) {
+      const roleColors = {
+        "送餐志工隊": 0xdb6a41,
+        "環保農耕隊": 0x71806a,
+        "巡守機動隊": 0x448292,
+        "防災急救員": 0xc0392b,
+        "彩虹課輔志工": 0xf1c40f,
+        "李昭靜與青年里幹事": 0xbe532c,
+        "毛孩志願者": 0x9b59b6
+      };
+
+      // HTML label badge above head
+      const bubble = document.createElement('div');
+      bubble.className = 'css2d-walker-bubble';
+      bubble.innerText = `${collab.role}：${collab.item}`;
+      const bubbleLabel = new CSS2DObject(bubble);
+
+      const walker = {
+        curve,
+        collab,
+        t: startT,
+        speed: 0.045 + rand() * 0.015,
+        forward: true,
+        pauseTimer: 0,
+        color: roleColors[collab.role] || 0x333333,
+        pos: new THREE.Vector3(),
+        bubbleLabel
+      };
+      scene.add(bubbleLabel);
+      walkers.push(walker);
+    }
+
+    function updateWalkers(dt) {
+      if (walkers.length === 0) return;
+      const dummy = new THREE.Object3D();
+
+      let legIdx = 0;
+      walkers.forEach((w, idx) => {
+        if (w.pauseTimer > 0) {
+          w.pauseTimer -= dt;
+          return;
+        }
+
+        const delta = (w.speed * dt);
+        w.t += w.forward ? delta : -delta;
+
+        if (w.t >= 1.0) {
+          w.t = 1.0; w.forward = false; w.pauseTimer = 1.4;
+          triggerLogEvent(`arrive`, `${w.collab.role} 抵達目標島，交接【${w.collab.item}】。`);
+        } else if (w.t <= 0.0) {
+          w.t = 0.0; w.forward = true; w.pauseTimer = 1.4;
+          triggerLogEvent(`depart`, `${w.collab.role} 從起點出發，搬運【${w.collab.item}】。`);
+        }
+
+        w.curve.getPoint(w.t, w.pos);
+        const tangent = w.curve.getTangent(w.t).multiplyScalar(w.forward ? 1 : -1);
+        const lookTarget = w.pos.clone().add(tangent);
+
+        // Animate chibi parts
+        const animTime = performance.now() * 0.009 + idx * 4.0;
+        const bob = Math.abs(Math.sin(animTime)) * 0.014;
+
+        // Head
+        dummy.position.set(w.pos.x, w.pos.y + 0.28 + bob, w.pos.z);
+        dummy.scale.set(1, 1, 1);
+        dummy.lookAt(lookTarget.x, dummy.position.y, lookTarget.z);
+        dummy.updateMatrix();
+        walkerMeshParts.heads.setMatrixAt(idx, dummy.matrix);
+        walkerMeshParts.heads.setColorAt(idx, new THREE.Color(0xffdbcb));
+
+        // Body
+        dummy.position.set(w.pos.x, w.pos.y + 0.16 + bob, w.pos.z);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        walkerMeshParts.bodies.setMatrixAt(idx, dummy.matrix);
+        walkerMeshParts.bodies.setColorAt(idx, new THREE.Color(w.color));
+
+        // Legs swinging
+        const legSwing = Math.sin(animTime) * 0.35;
+        dummy.position.set(w.pos.x - 0.03, w.pos.y + 0.06, w.pos.z);
+        dummy.rotation.x = legSwing;
+        dummy.updateMatrix();
+        walkerMeshParts.legs.setMatrixAt(legIdx++, dummy.matrix);
+
+        dummy.position.set(w.pos.x + 0.03, w.pos.y + 0.06, w.pos.z);
+        dummy.rotation.x = -legSwing;
+        dummy.updateMatrix();
+        walkerMeshParts.legs.setMatrixAt(legIdx++, dummy.matrix);
+
+        // Update CSS2D label position
+        w.bubbleLabel.position.set(w.pos.x, w.pos.y + 0.44, w.pos.z);
+        w.bubbleLabel.visible = showLabels && camera.position.distanceTo(w.pos) < 18;
+      });
+
+      walkerMeshParts.heads.instanceMatrix.needsUpdate = true;
+      walkerMeshParts.heads.instanceColor.needsUpdate = true;
+      walkerMeshParts.bodies.instanceMatrix.needsUpdate = true;
+      walkerMeshParts.bodies.instanceColor.needsUpdate = true;
+      walkerMeshParts.legs.instanceMatrix.needsUpdate = true;
+    }
+
+    function triggerLogEvent(type, text) {
+      const list = document.getElementById('log-list');
+      if (!list) return;
+      const el = document.createElement('div');
+      const timeStr = formatMinutesToClock(clockMinutes);
+      el.innerHTML = `<b>[${timeStr}]</b> ${text}`;
+      list.prepend(el);
+      while (list.children.length > 18) list.removeChild(list.lastChild);
+    }
+
+    /* =========================================================
+       7. BACKGROUND ENVIRONMENT, TERRAIN & DRIFTING CLOUDS
+    ========================================================= */
+    const clouds = [];
+
+    function initEnvironment() {
+      // 1. Sky Sphere with BackSide Gradient Shader
+      const skyGeo = new THREE.SphereGeometry(170, 32, 24);
+      const skyMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        fog: false,
+        uniforms: {
+          uTop: { value: new THREE.Color(0x9fd0ec) },
+          uHorizon: { value: new THREE.Color(0xf4eee3) },
+          uSunDir: { value: new THREE.Vector3(0, 1, 0) },
+          uNight: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPos;
+          void main() {
+            vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+            gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPos, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 uTop;
+          uniform vec3 uHorizon;
+          uniform vec3 uSunDir;
+          uniform float uNight;
+          varying vec3 vWorldPos;
+
+          float hash(vec3 p) {
+            p = fract(p * 0.3183099 + .1);
+            p *= 17.0;
+            return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+          }
+
+          void main() {
+            vec3 dir = normalize(vWorldPos);
+            float h = smoothstep(-0.02, 0.55, dir.y);
+            vec3 col = mix(uHorizon, uTop, h);
+
+            // Sun glow halo
+            float sunDot = max(dot(dir, uSunDir), 0.0);
+            col += vec3(1.0, 0.85, 0.6) * pow(sunDot, 18.0) * 0.35;
+
+            // Night stars
+            if (uNight > 0.05) {
+              vec3 starP = floor(dir * 180.0);
+              if (hash(starP) > 0.9965 && dir.y > 0.1) {
+                col += vec3(0.9, 0.95, 1.0) * uNight * 0.8;
+              }
+            }
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `
+      });
+      skyMesh = new THREE.Mesh(skyGeo, skyMat);
+      scene.add(skyMesh);
+
+      // 2. Animated Water Plane
+      const waterGeo = new THREE.CircleGeometry(160, 64);
+      waterGeo.rotateX(-Math.PI / 2);
+      const waterMat = new THREE.ShaderMaterial({
+        fog: true,
+        uniforms: {
+          uTime: { value: 0 },
+          uWaterColor: { value: new THREE.Color(0xa9d8db) },
+          fogColor: { value: new THREE.Color(0xf4eee3) },
+          fogNear: { value: 42 },
+          fogFar: { value: 150 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPos;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+            gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPos, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform vec3 uWaterColor;
+          uniform vec3 fogColor;
+          uniform float fogNear;
+          uniform float fogFar;
+          varying vec3 vWorldPos;
+          varying vec2 vUv;
+
+          void main() {
+            float dist = length(vWorldPos.xz);
+            float wave = sin(vWorldPos.x * 0.4 + uTime * 1.2) * cos(vWorldPos.z * 0.4 + uTime * 0.9);
+            vec3 deep = uWaterColor * 0.76;
+            vec3 shallow = uWaterColor * 1.08;
+            vec3 col = mix(shallow, deep, clamp(dist / 65.0, 0.0, 1.0));
+            col += vec3(0.08) * wave;
+
+            // Simple fog computation
+            float depth = length(vWorldPos - cameraPosition);
+            float fogFactor = smoothstep(fogNear, fogFar, depth);
+            col = mix(col, fogColor, fogFactor);
+
+            gl_FragColor = vec4(col, 0.92);
+          }
+        `
+      });
+      waterMesh = new THREE.Mesh(waterGeo, waterMat);
+      waterMesh.position.y = WATER_Y;
+      scene.add(waterMesh);
+
+      // 3. Surrounding Basin Mountain Rim
+      const terrainGeo = new THREE.PlaneGeometry(170, 170, 90, 90);
+      terrainGeo.rotateX(-Math.PI / 2);
+      const posAttr = terrainGeo.attributes.position;
+      const count = posAttr.count;
+      const colors = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        const x = posAttr.getX(i);
+        const z = posAttr.getZ(i);
+        const d = Math.sqrt(x * x + z * z);
+        let y = -0.5;
+
+        // Rim elevation between r=25 and 65, squashed on camera side (z > 0)
+        if (d > 22.0) {
+          const rim = THREE.MathUtils.smoothstep(d, 22.0, 60.0);
+          const n = (noise.noise2D(x * 0.04, z * 0.04) + 0.5) * 6.5;
+          const terraced = Math.floor(n * 2.5) / 2.5;
+          const squash = (z > 0) ? Math.max(0.2, 1.0 - (z / 80.0)) : 1.0;
+          y += rim * (terraced + 1.5) * squash;
+        }
+        posAttr.setY(i, y);
+
+        // Height-based clay vertex colors:
+        let col = new THREE.Color(0xaec493); // meadow
+        if (y < 0.2) col.setHex(0xd9c9a3);  // sand
+        else if (y < 2.5) col.setHex(0x9cb986); // grass
+        else if (y < 5.0) col.setHex(0x6f8a62); // forest
+        else col.setHex(0xb2a38d); // clay rock
+
+        colors[i * 3] = col.r;
+        colors[i * 3 + 1] = col.g;
+        colors[i * 3 + 2] = col.b;
+      }
+      terrainGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      terrainGeo.computeVertexNormals();
+
+      const terrainMat = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.95,
+        flatShading: true
+      });
+      terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+      terrainMesh.position.y = WATER_Y - 0.1;
+      terrainMesh.receiveShadow = true;
+      scene.add(terrainMesh);
+
+      // 4. Instanced Background Trees on mountain rim
+      const bgTreeGeo = new THREE.ConeGeometry(0.6, 1.4, 4);
+      const bgTreeMat = new THREE.MeshStandardMaterial({ color: 0x5a784e, roughness: 0.9, flatShading: true });
+      const treeCount = 450;
+      const bgTrees = new THREE.InstancedMesh(bgTreeGeo, bgTreeMat, treeCount);
+      const dMtx = new THREE.Matrix4();
+
+      for (let i = 0; i < treeCount; i++) {
+        const ang = rand() * Math.PI * 2;
+        const dist = 28 + rand() * 38;
+        const tx = Math.cos(ang) * dist;
+        const tz = Math.sin(ang) * dist;
+        // Suppress tree on near-camera side
+        if (tz > 22 && dist < 42) continue;
+        const ty = 1.0 + (dist - 28) * 0.18 + (noise.noise2D(tx * 0.05, tz * 0.05) * 1.5);
+        const scl = 0.8 + rand() * 0.7;
+
+        dMtx.makeRotationY(rand() * Math.PI);
+        dMtx.setPosition(tx, ty, tz);
+        dMtx.scale(new THREE.Vector3(scl, scl, scl));
+        bgTrees.setMatrixAt(i, dMtx);
+      }
+      bgTrees.instanceMatrix.needsUpdate = true;
+      scene.add(bgTrees);
+
+      // 5. Drifting Puffy Clouds
+      const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+      for (let i = 0; i < 10; i++) {
+        const cloudGroup = new THREE.Group();
+        const puffCount = 4 + Math.floor(rand() * 4);
+        for (let p = 0; p < puffCount; p++) {
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(1.2 + rand() * 1.0, 8, 6), cloudMat);
+          puff.position.set((p - puffCount / 2) * 1.1, (rand() - 0.5) * 0.4, (rand() - 0.5) * 0.8);
+          cloudGroup.add(puff);
+        }
+        cloudGroup.position.set(-60 + rand() * 120, 16 + rand() * 12, -60 + rand() * 120);
+        scene.add(cloudGroup);
+        clouds.push({ group: cloudGroup, speed: 0.8 + rand() * 0.6 });
+      }
+    }
+
+    /* =========================================================
+       8. CAMERA FLIGHT & SELECTION LOGIC
+    ========================================================= */
+    let currentSelectedIsland = null;
+    let currentSelectedItem = null;
+    let cameraFlight = null; // { startPos, endPos, startTarget, endTarget, startTime, duration }
+
+    function flyToTarget(pos, targetLook, duration = 800) {
+      if (isReducedMotion) {
+        camera.position.copy(pos);
+        controls.target.copy(targetLook);
+        controls.update();
+        return;
+      }
+      cameraFlight = {
+        startPos: camera.position.clone(),
+        endPos: pos.clone(),
+        startTarget: controls.target.clone(),
+        endTarget: targetLook.clone(),
+        startTime: performance.now(),
+        duration
+      };
+    }
+
+    function cancelCameraFlight() {
+      cameraFlight = null;
+    }
+
+    function resetOverviewCamera() {
+      isBirdsEye = false;
+      const aspect = window.innerWidth / window.innerHeight;
+      const dist = aspect > 1.2 ? 28.5 : (aspect > 0.8 ? 38 : 52);
+      const dir = new THREE.Vector3(0.24, 0.33, 0.87).normalize();
+      const targetPos = new THREE.Vector3(1.2, 0.6, 1.2);
+      const camPos = targetPos.clone().add(dir.multiplyScalar(dist));
+      flyToTarget(camPos, targetPos, 900);
+      closeDetailCard();
+    }
+
+    function toggleBirdsEye() {
+      isBirdsEye = !isBirdsEye;
+      document.getElementById('btn-toggle-birds').classList.toggle('active', isBirdsEye);
+      if (isBirdsEye) {
+        const topPos = controls.target.clone().add(new THREE.Vector3(0.01, 42, 6));
+        flyToTarget(topPos, controls.target, 800);
+      } else {
+        resetOverviewCamera();
+      }
+    }
+
+    // Select Island
+    function selectIsland(islandId) {
+      const isl = DATA.islands.find(i => i.id === islandId);
+      if (!isl) return;
+
+      currentSelectedIsland = isl;
+      currentSelectedItem = null;
+
+      // Update island label styles
+      document.querySelectorAll('.css2d-island-pill').forEach(el => {
+        el.classList.toggle('selected', el.dataset.islandId === islandId);
+      });
+
+      // Highlight building meshes on this island
+      highlightIslandMeshes(islandId);
+
+      // Camera flight with desktop offset
+      const center = islandCenters[islandId];
+      const target = center.clone();
+      if (window.innerWidth > 800) target.x += 1.2; // shift slightly to right of card
+      const camPos = target.clone().add(new THREE.Vector3(2.75, 5.3, 6.2));
+      flyToTarget(camPos, target);
+
+      // Show Island Info in Card
+      showIslandCard(isl);
+      triggerLogEvent('arrive', `里民瀏覽視角切換至【${isl.name}】。`);
+    }
+
+    // Select Individual Policy Item
+    function selectItem(itemId) {
+      let targetItem = null;
+      let targetIsland = null;
+      DATA.islands.forEach(isl => {
+        const f = isl.items.find(it => it.id === itemId);
+        if (f) { targetItem = f; targetIsland = isl; }
+      });
+      if (!targetItem) return;
+
+      currentSelectedItem = targetItem;
+      currentSelectedIsland = targetIsland;
+
+      // Highlight specific item parts
+      highlightItemMeshes(itemId);
+
+      // Find item position from kit entries
+      const entry = buildingKitEntries.find(e => e.id === itemId);
+      const itemPos = entry ? new THREE.Vector3().setFromMatrixPosition(entry.matrix) : islandCenters[targetIsland.id];
+
+      const target = itemPos.clone();
+      if (window.innerWidth > 800) target.x += 0.8;
+      const camPos = target.clone().add(new THREE.Vector3(1.6, 2.5, 3.2));
+      flyToTarget(camPos, target);
+
+      // Show Item Detail Card & Offscreen render
+      showItemCard(targetItem, targetIsland);
+    }
+
+    function highlightIslandMeshes(islandId) {
+      for (const kind in instancedMeshGroups) {
+        const { mesh, list } = instancedMeshGroups[kind];
+        let needsUp = false;
+        list.forEach(entry => {
+          if (entry.islandId === islandId) {
+            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(new THREE.Color(0xdb6a41), 0.22));
+            needsUp = true;
+          } else {
+            mesh.setColorAt(entry.instIndex, entry.color);
+            needsUp = true;
+          }
+        });
+        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      }
+    }
+
+    function highlightItemMeshes(itemId) {
+      for (const kind in instancedMeshGroups) {
+        const { mesh, list } = instancedMeshGroups[kind];
+        let needsUp = false;
+        list.forEach(entry => {
+          if (entry.id === itemId) {
+            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(new THREE.Color(0xdb6a41), 0.35));
+            needsUp = true;
+          } else {
+            mesh.setColorAt(entry.instIndex, entry.color);
+            needsUp = true;
+          }
+        });
+        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      }
+    }
+
+    function updateDayCycleHighlights(cycle) {
+      const yellow = new THREE.Color(0xfcea8b);
+      for (const kind in instancedMeshGroups) {
+        const { mesh, list } = instancedMeshGroups[kind];
+        let needsUp = false;
+        list.forEach(entry => {
+          if (entry.id && cycle.highlights.includes(entry.id)) {
+            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(yellow, 0.28));
+            needsUp = true;
+          } else if (!currentSelectedIsland || entry.islandId !== currentSelectedIsland.id) {
+            mesh.setColorAt(entry.instIndex, entry.color);
+            needsUp = true;
+          }
+        });
+        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      }
+    }
+
+    /* =========================================================
+       9. UI CARDS, SIDEBAR & OFFSCREEN 3D THUMBNAIL
+    ========================================================= */
+    let offscreenRenderer, offscreenScene, offscreenCamera;
+
+    function initOffscreenThumbnailRenderer() {
+      const cvs = document.getElementById('offscreen-thumb');
+      offscreenRenderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, alpha: true });
+      offscreenRenderer.setSize(160, 130);
+      offscreenRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      offscreenScene = new THREE.Scene();
+      offscreenCamera = new THREE.PerspectiveCamera(30, 160 / 130, 0.1, 15);
+      offscreenCamera.position.set(1.4, 1.5, 2.0);
+      offscreenCamera.lookAt(0, 0.4, 0);
+
+      const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbbb, 1.2);
+      const dir = new THREE.DirectionalLight(0xfff5e6, 2.2);
+      dir.position.set(2, 4, 3);
+      offscreenScene.add(hemi, dir);
+    }
+
+    function renderThumbnailForModel(modelKind) {
+      // Clear previous preview meshes
+      while (offscreenScene.children.length > 2) {
+        offscreenScene.remove(offscreenScene.children[offscreenScene.children.length - 1]);
+      }
+      const group = new THREE.Group();
+      // Temporarily piggyback helper to build a standalone small object
+      const previewEntries = [];
+      const origAdd = addPart;
+      // Mock addPart into standalone group
+      const helper = (kind, pos, rot, scl, col) => {
+        const geo = sharedGeometries[kind];
+        const mat = kind.startsWith('glow') ? glowClayMaterial : solidClayMaterial.clone();
+        if (!kind.startsWith('glow')) mat.color = new THREE.Color(col);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+        mesh.rotation.set(rot[0], rot[1], rot[2]);
+        mesh.scale.set(scl[0], scl[1], scl[2]);
+        group.add(mesh);
+      };
+
+      // Simple archetype builder clone for preview
+      buildStandalonePreview(modelKind, group);
+      offscreenScene.add(group);
+      offscreenRenderer.render(offscreenScene, offscreenCamera);
+    }
+
+    function buildStandalonePreview(modelKind, group) {
+      const m = new THREE.Matrix4();
+      const coral = 0xdb6a41, cream = 0xfff7f0, yellow = 0xfdea8d, wood = 0xba8c66, teal = 0x448292, green = 0x74866c;
+      const b = (geo, p, s, c) => {
+        const mesh = new THREE.Mesh(sharedGeometries[geo], new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
+        mesh.position.set(p[0], p[1], p[2]);
+        mesh.scale.set(s[0], s[1], s[2]);
+        group.add(mesh);
+      };
+      if (modelKind === 'office') {
+        b('rbox', [0, 0.35, 0], [0.8, 0.65, 0.7], cream);
+        b('hip', [0, 0.85, 0], [1.05, 0.45, 0.95], coral);
+      } else if (modelKind === 'park') {
+        b('cylinder', [0, 0.15, 0], [0.5, 0.2, 0.5], 0xc8b8aa);
+        b('ico', [0, 0.65, 0], [0.65, 0.75, 0.65], green);
+      } else if (modelKind === 'heart') {
+        b('sphere', [-0.15, 0.5, 0], [0.35, 0.35, 0.3], coral);
+        b('sphere', [0.15, 0.5, 0], [0.35, 0.35, 0.3], coral);
+        b('cone', [0, 0.35, 0], [0.45, -0.45, 0.3], coral);
+      } else {
+        b('rbox', [0, 0.4, 0], [0.75, 0.7, 0.75], coral);
+        b('cylinder', [0, 0.85, 0], [0.2, 0.25, 0.2], yellow);
+      }
+    }
+
+    function showIslandCard(isl) {
+      const card = document.getElementById('detail-card');
+      card.style.display = 'block';
+      document.getElementById('card-eyebrow').innerText = `主題島嶼 0${DATA.islands.indexOf(isl) + 1}`;
+      document.getElementById('card-title').innerText = isl.name;
+      document.getElementById('card-desc').innerText = isl.desc;
+
+      // Sub-item chips summary
+      const factsBox = document.getElementById('card-facts');
+      factsBox.innerHTML = '';
+      isl.items.forEach(it => {
+        const itemPill = document.createElement('div');
+        itemPill.className = 'policy-item-pill';
+        itemPill.innerHTML = `<span>${it.name}</span><span style="font-weight:700;color:var(--coral);">➔</span>`;
+        itemPill.addEventListener('click', () => selectItem(it.id));
+        factsBox.appendChild(itemPill);
+      });
+
+      document.getElementById('card-footer').innerHTML = `
+        <span class="timeline-badge">${isl.items.length} 項里政落地方針</span>
+      `;
+      renderThumbnailForModel(isl.items[0].model);
+    }
+
+    function showItemCard(item, isl) {
+      const card = document.getElementById('detail-card');
+      card.style.display = 'block';
+      document.getElementById('card-eyebrow').innerText = `${isl.name} ｜ 里政細項`;
+      document.getElementById('card-title').innerText = item.name;
+      document.getElementById('card-desc').innerText = item.desc;
+
+      const factsBox = document.getElementById('card-facts');
+      factsBox.innerHTML = '';
+      item.facts.forEach(f => {
+        const parts = f.split(/([0-9,%.~+-]+)/);
+        const fDiv = document.createElement('div');
+        fDiv.className = 'fact-box';
+        fDiv.innerHTML = `
+          <div class="fact-num">${parts[1] || ''}</div>
+          <div class="fact-label">${parts[0] || ''}${parts[2] || ''}</div>
+        `;
+        factsBox.appendChild(fDiv);
+      });
+
+      document.getElementById('card-footer').innerHTML = `
+        <span class="timeline-badge">⏱ 預計時程：${item.timeline}</span>
+      `;
+      renderThumbnailForModel(item.model);
+    }
+
+    function closeDetailCard() {
+      document.getElementById('detail-card').style.display = 'none';
+      currentSelectedIsland = null;
+      currentSelectedItem = null;
+      document.querySelectorAll('.css2d-island-pill').forEach(el => el.classList.remove('selected'));
+      // Reset color highlight
+      updateDayCycleHighlights(activeDayCycle);
+    }
+
+    // Populate Sidebar Content
+    function renderSidebar() {
+      const container = document.getElementById('sidebar-list');
+      container.innerHTML = '';
+
+      DATA.islands.forEach((isl, i) => {
+        const acc = document.createElement('div');
+        acc.className = 'island-accordion';
+        acc.innerHTML = `
+          <div class="accordion-summary">
+            <span>${(i + 1).toString().padStart(2, '0')}. ${isl.name}</span>
+            <span class="accordion-badge">${isl.items.length}</span>
+          </div>
+          <div class="accordion-content" id="acc-body-${isl.id}"></div>
+        `;
+        const summary = acc.querySelector('.accordion-summary');
+        const body = acc.querySelector('.accordion-content');
+
+        isl.items.forEach(it => {
+          const pill = document.createElement('div');
+          pill.className = 'policy-item-pill';
+          pill.id = `pill-${it.id}`;
+          pill.innerHTML = `<span>${it.name}</span><span style="font-size:10px;color:#8a7f78;">${it.timeline}</span>`;
+          pill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectItem(it.id);
+          });
+          body.appendChild(pill);
+        });
+
+        summary.addEventListener('click', () => {
+          selectIsland(isl.id);
+        });
+
+        container.appendChild(acc);
+      });
+    }
+
+    function renderCollaborationSidebar() {
+      const container = document.getElementById('sidebar-list');
+      container.innerHTML = '';
+      DATA.collaborations.forEach(col => {
+        const fromIsl = DATA.islands.find(i => i.id === col.from);
+        const toIsl = DATA.islands.find(i => i.id === col.to);
+        const itemBox = document.createElement('div');
+        itemBox.className = 'island-accordion';
+        itemBox.style.padding = '12px';
+        itemBox.innerHTML = `
+          <div style="font-size:10px;font-family:var(--font-mono);font-weight:700;color:var(--coral);margin-bottom:2px;">
+            ${col.level.toUpperCase()} FLOW
+          </div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px;">${col.item}</div>
+          <div style="font-size:11px;color:#6d615b;line-height:1.4;">
+            <b>${col.role}</b> 穿梭於【${fromIsl ? fromIsl.name : ''}】與【${toIsl ? toIsl.name : ''}】之間。
+          </div>
+        `;
+        itemBox.addEventListener('click', () => {
+          selectIsland(col.from);
+        });
+        container.appendChild(itemBox);
+      });
+    }
+
+    /* =========================================================
+       10. TIME, CONTROLS, INTERACTION & ANIMATION LOOP
+    ========================================================= */
+    function setDayTime(minutes) {
+      clockMinutes = minutes;
+      const kf = getInterpolatedDayFrame(clockMinutes);
+
+      // Interpolate sky shader uniforms
+      if (skyMesh) {
+        skyMesh.material.uniforms.uTop.value.copy(kf.top);
+        skyMesh.material.uniforms.uHorizon.value.copy(kf.hor);
+        skyMesh.material.uniforms.uNight.value = kf.night;
+      }
+      // Fog matches horizon
+      scene.fog.color.copy(kf.hor);
+      if (waterMesh) {
+        waterMesh.material.uniforms.uWaterColor.value.copy(kf.wat);
+        waterMesh.material.uniforms.fogColor.value.copy(kf.hor);
+      }
+
+      // Hemisphere & Directional sun
+      hemiLight.color.copy(kf.hSky);
+      hemiLight.groundColor.copy(kf.hGnd);
+      hemiLight.intensity = kf.hI;
+
+      sunLight.color.copy(kf.sunColor);
+      sunLight.intensity = kf.sunI;
+
+      // Sun Direction formula from prompt:
+      // Quantized to 10 min, t = clamp((min-360)/720, 0, 1), az = π(.15+.7t), el = .35 + sin(tπ)*.75
+      const t = THREE.MathUtils.clamp((clockMinutes - 360) / 720, 0, 1);
+      const az = Math.PI * (0.15 + 0.7 * t);
+      const el = 0.35 + Math.sin(t * Math.PI) * 0.75;
+      const dir = new THREE.Vector3(
+        Math.cos(az) * Math.cos(el),
+        Math.sin(el),
+        0.55 * Math.cos(el) + 0.35
+      ).normalize();
+
+      if (skyMesh) skyMesh.material.uniforms.uSunDir.value.copy(dir);
+      sunLight.position.copy(dir.clone().multiplyScalar(45));
+
+      // Emissive windows & street lights boosted at night
+      glowClayMaterial.emissiveIntensity = 0.4 + kf.night * 2.8;
+
+      // Match nearest active dayCycle
+      let bestCycle = DATA.dayCycles[0];
+      DATA.dayCycles.forEach(c => {
+        if (clockMinutes >= c.min) bestCycle = c;
+      });
+      if (activeDayCycle !== bestCycle) {
+        activeDayCycle = bestCycle;
+        updateDayCycleHighlights(activeDayCycle);
+      }
+    }
+
+    function formatMinutesToClock(m) {
+      const hrs = Math.floor(m / 60) % 24;
+      const mins = Math.floor(m % 60);
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    }
+
+    // Pointer Raycasting with <= 6px movement check
+    let pointerDownPos = { x: 0, y: 0 };
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function onPointerDown(e) {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+      cancelCameraFlight();
+    }
+
+    function onPointerUp(e) {
+      const dx = e.clientX - pointerDownPos.x;
+      const dy = e.clientY - pointerDownPos.y;
+      if (Math.sqrt(dx * dx + dy * dy) > 6) return; // drag occurred, not a click
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(scene.children, true);
+
+      for (let i = 0; i < hits.length; i++) {
+        const obj = hits[i].object;
+        if (obj.userData && obj.userData.isIsland) {
+          selectIsland(obj.userData.islandId);
+          return;
+        }
+        if (obj.userData && obj.userData.isFlow) {
+          selectIsland(obj.userData.collab.from);
+          return;
+        }
+      }
+    }
+
+    // Animation Render Loop
+    let lastTime = performance.now();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const now = performance.now();
+      let dt = (now - lastTime) / 1000;
+      if (dt > 0.08) dt = 0.08;
+      lastTime = now;
+
+      // Progress Time if not paused and not reduced motion
+      if (!isPaused && !isReducedMotion) {
+        // 144 seconds per 1 day (1440 min) => 10 min per sec
+        clockMinutes = (clockMinutes + dt * 10) % 1440;
+        setDayTime(clockMinutes);
+      }
+
+      // Smooth camera flight
+      if (cameraFlight) {
+        const elapsed = now - cameraFlight.startTime;
+        const progress = Math.min(1.0, elapsed / cameraFlight.duration);
+        // easeInOutCubic
+        const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        camera.position.lerpVectors(cameraFlight.startPos, cameraFlight.endPos, ease);
+        controls.target.lerpVectors(cameraFlight.startTarget, cameraFlight.endTarget, ease);
+        controls.update();
+        if (progress >= 1.0) cameraFlight = null;
+      } else {
+        controls.update();
+      }
+
+      // Water & Flow Shaders Time update
+      if (waterMesh) waterMesh.material.uniforms.uTime.value = now * 0.001;
+      flowLines.forEach(f => {
+        if (!isReducedMotion) f.material.uniforms.uTime.value = now * 0.001;
+      });
+
+      // Update Chibi Walkers
+      if (!isReducedMotion) updateWalkers(dt);
+
+      // Drift Clouds slowly
+      clouds.forEach(c => {
+        c.group.position.x += c.speed * dt;
+        if (c.group.position.x > 80) c.group.position.x = -80;
+      });
+
+      // Render
+      renderer.render(scene, camera);
+      cssRenderer.render(scene, camera);
+    }
+
+    /* =========================================================
+       11. EVENT LISTENERS & INITIALIZATION
+    ========================================================= */
+    function setupDOMEvents() {
+      window.addEventListener('resize', onWindowResize);
+      renderer.domElement.addEventListener('pointerdown', onPointerDown);
+      renderer.domElement.addEventListener('pointerup', onPointerUp);
+
+      document.getElementById('card-close-btn').addEventListener('click', closeDetailCard);
+      document.getElementById('btn-reset-cam').addEventListener('click', resetOverviewCamera);
+      document.getElementById('btn-toggle-birds').addEventListener('click', toggleBirdsEye);
+
+      document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+      });
+
+      // HUD Time Presets
+      const timeBtns = {
+        'btn-time-morning': 360,
+        'btn-time-day': 600,
+        'btn-time-dusk': 1020,
+        'btn-time-night': 1260
+      };
+      for (const bId in timeBtns) {
+        document.getElementById(bId).addEventListener('click', (e) => {
+          document.querySelectorAll('.hud-time-btn').forEach(btn => btn.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          setDayTime(timeBtns[bId]);
+        });
+      }
+
+      // HUD Toggles
+      document.getElementById('btn-toggle-labels').addEventListener('click', (e) => {
+        showLabels = !showLabels;
+        e.currentTarget.classList.toggle('active', showLabels);
+        document.querySelectorAll('.css2d-island-pill').forEach(el => el.style.display = showLabels ? 'block' : 'none');
+      });
+
+      document.getElementById('btn-toggle-flows').addEventListener('click', (e) => {
+        showFlows = !showFlows;
+        e.currentTarget.classList.toggle('active', showFlows);
+        flowLines.forEach(f => f.mesh.visible = showFlows);
+      });
+
+      document.getElementById('btn-toggle-pause').addEventListener('click', (e) => {
+        isPaused = !isPaused;
+        e.currentTarget.classList.toggle('active', isPaused);
+        const txt = document.getElementById('txt-pause');
+        txt.innerText = isPaused ? (currentLang === 'en' ? 'Play' : '播放') : (currentLang === 'en' ? 'Pause' : '暫停');
+      });
+
+      // Tabs: Themes vs Flows
+      document.getElementById('tab-themes').addEventListener('click', (e) => {
+        document.getElementById('tab-flows').classList.remove('active');
+        e.target.classList.add('active');
+        renderSidebar();
+      });
+      document.getElementById('tab-flows').addEventListener('click', (e) => {
+        document.getElementById('tab-themes').classList.remove('active');
+        e.target.classList.add('active');
+        renderCollaborationSidebar();
+      });
+
+      // Search filter
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        document.querySelectorAll('.island-accordion').forEach(acc => {
+          const match = acc.innerText.toLowerCase().includes(val);
+          acc.style.display = match ? 'block' : 'none';
+        });
+      });
+
+      // Bilingual toggle
+      document.getElementById('btn-lang').addEventListener('click', toggleLanguage);
+
+      // Onboarding Help Modal
+      const modal = document.getElementById('help-modal');
+      document.getElementById('btn-help').addEventListener('click', () => modal.style.display = 'grid');
+      document.getElementById('btn-close-help').addEventListener('click', () => {
+        modal.style.display = 'none';
+        try { localStorage.setItem('shanguang_visited', 'true'); } catch(e){}
+      });
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDetailCard();
+        if (e.key === 'ArrowLeft') controls.target.x -= 0.6;
+        if (e.key === 'ArrowRight') controls.target.x += 0.6;
+      });
+
+      // Prefers Reduced Motion listener
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+        isReducedMotion = e.matches;
+      });
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      document.querySelectorAll('[data-zh]').forEach(el => {
+        el.innerText = el.getAttribute(`data-${currentLang}`) || el.innerText;
+      });
+    }
+
+    function onWindowResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      cssRenderer.setSize(w, h);
+    }
+
+    /* Initialize Scene */
+    async function init() {
+      try {
+        const container = document.getElementById('webgl-container');
+
+        // Three.js WebGL Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        const maxPR = window.innerWidth < 800 ? 1.4 : 1.75;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPR));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+
+        // CSS2D Renderer for labels
+        cssRenderer = new CSS2DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = '0px';
+        cssRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(cssRenderer.domElement);
+
+        // Scene, Fog, PerspectiveCamera
+        scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0xf4eee3, 42, 150);
+
+        camera = new THREE.PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.3, 320);
+        camera.position.set(22, 18, 30);
+
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.07;
+        controls.enablePan = false;
+        controls.minPolarAngle = THREE.MathUtils.degToRad(25);
+        controls.maxPolarAngle = THREE.MathUtils.degToRad(70);
+        controls.minDistance = 3;
+        controls.maxDistance = 70;
+
+        // Lights
+        hemiLight = new THREE.HemisphereLight(0xeef6fa, 0x8f8270, 1.35);
+        scene.add(hemiLight);
+
+        sunLight = new THREE.DirectionalLight(0xfff1de, 2.9);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.set(2048, 2048);
+        sunLight.shadow.camera.near = 1;
+        sunLight.shadow.camera.far = 90;
+        sunLight.shadow.camera.left = -20;
+        sunLight.shadow.camera.right = 20;
+        sunLight.shadow.camera.top = 22;
+        sunLight.shadow.camera.bottom = -22;
+        sunLight.shadow.bias = -0.0006;
+        sunLight.shadow.normalBias = 0.045;
+        sunLight.shadow.radius = 3;
+        scene.add(sunLight);
+
+        fillLight = new THREE.DirectionalLight(0xbfd6ff, 0.35);
+        fillLight.position.set(-15, 20, -15);
+        scene.add(fillLight);
+
+        // Build Environment, Islands, Walkers, Kits
+        initEnvironment();
+        buildIslandsAndBridges();
+        compileBuildingKit();
+        initWalkerKit();
+        initCollaborationFlows();
+        initOffscreenThumbnailRenderer();
+
+        // UI & Event Setup
+        renderSidebar();
+        setupDOMEvents();
+        setDayTime(600); // 10:00 AM start
+
+        // Initial Overview Camera Animation
+        resetOverviewCamera();
+
+        // First-visit detection
+        try {
+          if (!localStorage.getItem('shanguang_visited')) {
+            document.getElementById('help-modal').style.display = 'grid';
+          }
+        } catch(e) {}
+
+        // Hide Loader
+        const loader = document.getElementById('loader');
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity .4s ease';
+        setTimeout(() => loader.remove(), 420);
+
+        // Start render loop
+        animate();
+
+      } catch (err) {
+        console.error("Initialization error:", err);
+        const msg = document.getElementById('loader-msg');
+        if (msg) {
+          msg.style.color = '#c0392b';
+          msg.innerHTML = `無法載入 3D 畫布，請確認瀏覽器支援 WebGL。<br><small>${err.message}</small>`;
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
