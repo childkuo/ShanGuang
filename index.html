@@ -2,256 +2,143 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>山光里政策島 ｜ 李昭靜 里長候選人政策展示</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>李昭靜｜十全十美．優質山光 3D政策島</title>
   <style>
     :root {
       --coral: #db6a41;
-      --coral-dark: #be532c;
       --ink: #211d1d;
       --cream: #fff8f4;
       --yellow: #fcea8b;
       --stone: #c5b5a7;
       --green: #71806a;
-      --glass: rgba(255, 248, 244, 0.86);
-      --glass-card: rgba(255, 255, 255, 0.88);
-      --shadow-sm: 0 4px 12px rgba(74, 42, 20, 0.08);
-      --shadow-md: 0 10px 28px rgba(74, 42, 20, 0.12);
-      --shadow-lg: 0 18px 48px rgba(74, 42, 20, 0.16);
-      --font-sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-      --font-serif: Georgia, Cambria, "Times New Roman", serif;
+      --surface: rgba(255, 248, 244, 0.90);
+      --surface-border: rgba(219, 106, 65, 0.22);
+      --font-stack: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-    html, body {
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html {
       width: 100%; height: 100%; overflow: hidden;
-      font-family: var(--font-sans);
+      font-family: var(--font-stack); color: var(--ink);
+      background: radial-gradient(circle at center, #fffdf9 0%, #edddcf 100%);
+    }
+    #canvas-container { position: absolute; inset: 0; z-index: 1; }
+    #css2d-container { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+
+    /* UI 通用樣式 */
+    .glass {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--surface-border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(33, 29, 29, 0.08);
+      pointer-events: auto;
+    }
+    .btn {
+      background: var(--cream);
+      border: 1px solid #e0cfc2;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--ink);
-      background: radial-gradient(circle at 50% 40%, #fffdf9 0%, #edddcf 100%);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+      display: inline-flex; align-items: center; gap: 6px;
     }
+    .btn:hover { background: #fff; transform: translateY(-1px); border-color: var(--coral); }
+    .btn.active { background: var(--coral); color: #fff; border-color: var(--coral); }
 
-    #webgl-container { position: absolute; inset: 0; z-index: 1; outline: none; }
+    /* 頂部品牌牌 */
+    #brand-badge {
+      position: absolute; top: 20px; left: 24px; z-index: 10;
+      padding: 14px 20px; display: flex; flex-direction: column; gap: 3px;
+    }
+    #brand-badge h1 { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; color: var(--coral); }
+    #brand-badge p { font-size: 12px; color: #6b5c53; font-weight: 500; }
 
-    /* UI Overlay Shell */
-    .ui-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-    .interactive { pointer-events: auto; }
+    /* 左側詳細卡片 */
+    #detail-card {
+      position: absolute; top: 96px; left: 24px; width: 340px; max-height: calc(100vh - 120px);
+      z-index: 10; padding: 22px; display: none; flex-direction: column; gap: 14px;
+      overflow-y: auto; transition: transform 0.3s ease;
+    }
+    #detail-card h2 { font-size: 19px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+    #detail-card .meta-pill { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: #fae4dc; color: var(--coral); font-weight: bold; }
+    #detail-card .desc { font-size: 13.5px; line-height: 1.6; color: #443c37; }
+    #detail-card .facts { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    #detail-card .facts li {
+      font-size: 12.5px; background: #fff; padding: 8px 12px; border-radius: 8px;
+      border-left: 3px solid var(--coral); color: #504640; line-height: 1.4;
+    }
+    #detail-card .close-btn { position: absolute; top: 18px; right: 18px; cursor: pointer; font-size: 16px; border: none; background: transparent; color: #887870; }
 
-    /* Brand Card (Top Left) */
-    .brand-card {
-      position: absolute; top: 18px; left: 18px;
-      padding: 12px 18px; border-radius: 18px;
-      background: var(--glass);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.6);
-      display: flex; align-items: center; gap: 14px;
+    /* 右側清單側欄 */
+    #list-drawer {
+      position: absolute; top: 20px; right: 24px; width: 320px; max-height: calc(100vh - 110px);
+      z-index: 10; padding: 18px; display: flex; flex-direction: column; gap: 12px;
     }
-    .brand-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--coral), #f7a584);
-      display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px;
-      box-shadow: 0 2px 8px rgba(219,106,65,0.3);
+    .search-box {
+      width: 100%; border: 1px solid #decbc0; background: #fff;
+      padding: 8px 12px; border-radius: 10px; font-size: 13px; outline: none;
     }
-    .brand-meta h1 { font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: 0.5px; }
-    .brand-meta p { font-size: 11px; color: #6d625d; font-family: var(--font-mono); font-weight: 700; letter-spacing: 1.5px; }
+    .tab-row { display: flex; gap: 6px; margin-top: 2px; }
+    .tab-row button { flex: 1; padding: 6px; font-size: 12px; }
+    #drawer-items { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 520px; padding-right: 4px; }
+    .drawer-item {
+      padding: 10px 12px; background: #ffffffb3; border-radius: 10px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+    }
+    .drawer-item:hover { border-color: var(--coral); background: #fff; transform: translateX(-2px); }
+    .drawer-item-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .drawer-item-sub { font-size: 11px; color: #7a6a61; }
 
-    /* Quick Toolbar (Top Left under brand) */
-    .top-actions {
-      position: absolute; top: 88px; left: 18px; display: flex; gap: 8px;
+    /* 底部操作工具列 HUD */
+    #hud-toolbar {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 10; padding: 8px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
-    .btn-chip {
-      height: 38px; min-width: 38px; padding: 0 14px; border-radius: 999px;
-      background: #fff; border: 1px solid rgba(197, 181, 167, 0.4);
-      color: var(--ink); font-size: 13px; font-weight: 600;
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      cursor: pointer; box-shadow: var(--shadow-sm); transition: all .16s ease;
-    }
-    .btn-chip:hover { background: var(--yellow); border-color: #ebd169; }
-    .btn-chip:active { background: var(--ink); color: #fff; }
-    .btn-chip:focus-visible { outline: 3px solid var(--coral); }
+    .divider { width: 1px; height: 18px; background: #d7c5ba; margin: 0 4px; }
 
-    /* Right Sidebar (Policy List & Collaborations) */
-    .sidebar {
-      position: absolute; top: 18px; right: 18px; bottom: 18px; width: 330px;
-      background: var(--glass);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      border-radius: 24px; border: 1px solid rgba(255,255,255,0.7);
-      box-shadow: var(--shadow-lg); display: flex; flex-direction: column; overflow: hidden;
-      transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* 右上即時里政日誌面板 */
+    #log-panel {
+      position: absolute; top: 20px; right: 360px; width: 260px; max-height: 220px;
+      z-index: 9; padding: 14px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;
     }
-    .sidebar.collapsed { transform: translateX(calc(100% + 24px)); }
-    .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid rgba(74,42,20,0.06); }
-    .search-input {
-      width: 100%; height: 38px; border-radius: 12px; padding: 0 12px;
-      border: 1px solid rgba(197, 181, 167, 0.6); background: rgba(255,255,255,0.9);
-      font-size: 13px; font-family: var(--font-sans); color: var(--ink); outline: none;
-    }
-    .search-input:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(219,106,65,0.15); }
+    #log-list { overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+    .log-item { font-size: 11.5px; line-height: 1.4; color: #5a4f47; animation: fadeIn 0.4s ease; }
 
-    .tabs { display: flex; gap: 6px; margin-top: 10px; }
-    .tab-btn {
-      flex: 1; height: 32px; border-radius: 8px; border: none; background: transparent;
-      font-size: 12px; font-weight: 700; color: #7f736d; cursor: pointer; transition: all .14s;
+    /* 3D 浮動標籤 (CSS2D) */
+    .css2d-label {
+      padding: 4px 9px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      color: var(--ink); background: var(--surface); border: 1px solid var(--surface-border);
+      pointer-events: auto; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.06);
     }
-    .tab-btn.active { background: #fff; color: var(--coral); box-shadow: var(--shadow-sm); }
+    .css2d-label:hover { transform: scale(1.08) translateY(-2px); background: #fff; border-color: var(--coral); }
+    .css2d-label.active { background: var(--coral); color: #fff; }
 
-    .sidebar-body { flex: 1; overflow-y: auto; padding: 12px 14px; }
-    .sidebar-body::-webkit-scrollbar { width: 5px; }
-    .sidebar-body::-webkit-scrollbar-thumb { background: rgba(197,181,167,0.5); border-radius: 4px; }
-
-    /* Accordion / List styles */
-    .island-accordion {
-      margin-bottom: 8px; border-radius: 14px; background: rgba(255,255,255,0.65);
-      border: 1px solid rgba(255,255,255,0.8); overflow: hidden; transition: background .15s;
-    }
-    .island-accordion:hover { background: rgba(255,255,255,0.95); }
-    .accordion-summary {
-      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; font-size: 13px; font-weight: 700;
-    }
-    .accordion-badge {
-      font-size: 10px; font-family: var(--font-mono); font-weight: 700;
-      padding: 2px 6px; border-radius: 999px; background: rgba(219,106,65,0.12); color: var(--coral);
-    }
-    .accordion-content { padding: 4px 10px 10px; border-top: 1px dashed rgba(74,42,20,0.08); display: flex; flex-direction: column; gap: 6px; }
-    .policy-item-pill {
-      padding: 7px 10px; border-radius: 8px; background: #fff; border: 1px solid rgba(197, 181, 167, 0.3);
-      cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 12px; transition: all .12s;
-    }
-    .policy-item-pill:hover { border-color: var(--coral); transform: translateX(2px); }
-    .policy-item-pill.active { background: #fff2ed; border-color: var(--coral); font-weight: 700; }
-
-    /* Left Detail Card */
-    .detail-card {
-      position: absolute; top: 140px; left: 18px; width: 340px; max-height: calc(100vh - 240px);
-      background: var(--glass-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-radius: 22px; border: 1px solid rgba(255,255,255,0.8);
-      box-shadow: var(--shadow-lg); overflow-y: auto; padding: 18px; z-index: 12;
-      display: none; animation: slideInLeft .24s ease-out forwards;
-    }
-    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
-    .card-close {
-      position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%;
-      border: none; background: rgba(0,0,0,0.06); cursor: pointer; display: grid; place-items: center; font-size: 14px;
-    }
-    .card-close:hover { background: var(--coral); color: #fff; }
-    .eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--coral); text-transform: uppercase; margin-bottom: 4px; }
-    .card-title { font-size: 20px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; }
-    .card-desc { font-size: 13px; line-height: 1.5; color: #554a44; margin-bottom: 14px; }
-    .facts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 12px 0; }
-    .fact-box {
-      background: #fff; padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(197, 181, 167, 0.35); text-align: center;
-    }
-    .fact-num { font-family: var(--font-serif); font-size: 20px; font-weight: 700; font-style: italic; color: var(--coral); }
-    .fact-label { font-size: 10px; color: #7f736d; margin-top: 2px; }
-    .timeline-badge {
-      display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      background: #eef3eb; color: var(--green); border: 1px solid #d4e0cf; margin-top: 4px;
-    }
-    .preview-canvas-box {
-      width: 100%; height: 130px; border-radius: 14px; background: linear-gradient(180deg, #f7f3ed 0%, #ede5da 100%);
-      margin-bottom: 12px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
-    }
-
-    /* HUD Bar (Bottom Center) */
-    .hud-bar {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      padding: 6px 10px; border-radius: 999px; background: var(--glass);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.7); box-shadow: var(--shadow-md);
-      display: flex; align-items: center; gap: 6px; z-index: 15;
-    }
-    .hud-divider { width: 1px; height: 26px; background: rgba(74,42,20,0.12); margin: 0 4px; }
-    .hud-btn {
-      height: 44px; min-width: 48px; padding: 0 10px; border-radius: 999px; border: none; background: transparent;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-      cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 700; transition: all .14s;
-    }
-    .hud-btn .icon { font-size: 14px; }
-    .hud-btn:hover { background: var(--yellow); }
-    .hud-btn.active { background: var(--coral); color: #fff; }
-    .hud-time-btn { font-size: 11px; padding: 0 12px; height: 36px; border-radius: 999px; }
-
-    /* Live Ward Log (Top Right next to Sidebar) */
-    .log-panel {
-      position: absolute; top: 18px; right: 360px; width: 280px; max-height: 190px;
-      background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      border-radius: 18px; border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow-sm);
-      padding: 10px 14px; overflow: hidden; display: flex; flex-direction: column; z-index: 9;
-    }
-    .log-title {
-      font-size: 11px; font-family: var(--font-mono); font-weight: 700; letter-spacing: 1px;
-      display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
-    }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #27ae60; box-shadow: 0 0 8px #27ae60; }
-    .log-list { overflow-y: auto; font-size: 11px; line-height: 1.45; color: #50443e; display: flex; flex-direction: column; gap: 4px; }
-
-    /* CSS2D Island & Subitem Labels */
-    .css2d-island-pill {
-      background: #fff; color: var(--ink); padding: 4px 10px; border-radius: 999px;
-      font-size: 11px; font-weight: 800; box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-      border: 1.5px solid var(--coral); cursor: pointer; white-space: nowrap;
-      pointer-events: auto; transform: translate(-50%, -100%); transition: transform .14s, background .14s;
-    }
-    .css2d-island-pill:hover { background: var(--yellow); transform: translate(-50%, -108%) scale(1.05); }
-    .css2d-island-pill.selected { background: var(--ink); color: #fff; border-color: var(--yellow); }
-
-    .css2d-subitem-pin {
-      width: 22px; height: 22px; border-radius: 50%; background: var(--coral); color: #fff;
-      font-size: 11px; font-weight: 800; display: grid; place-items: center;
-      box-shadow: 0 3px 8px rgba(219,106,65,0.4); border: 2px solid #fff;
-      transform: translate(-50%, -50%); cursor: pointer; pointer-events: auto;
-    }
-
-    .css2d-walker-bubble {
-      background: rgba(33,29,29,0.88); color: #fff; padding: 2px 7px; border-radius: 6px;
-      font-size: 10px; font-weight: 600; white-space: nowrap; transform: translate(-50%, -130%);
-      pointer-events: none; border: 1px solid rgba(255,255,255,0.3);
-    }
-
-    /* Modal / Onboarding Dialog */
-    .modal-overlay {
-      position: absolute; inset: 0; background: rgba(33,29,29,0.45); backdrop-filter: blur(6px);
-      z-index: 100; display: grid; place-items: center; pointer-events: auto;
-    }
-    .modal-box {
-      width: 90%; max-width: 440px; background: #fff; border-radius: 24px; padding: 24px;
-      box-shadow: var(--shadow-lg); text-align: center;
-    }
-    .modal-step { text-align: left; margin: 14px 0; display: flex; gap: 12px; font-size: 13px; color: #5a4f49; }
-    .modal-step-idx {
-      width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); color: var(--ink);
-      font-weight: 800; display: grid; place-items: center; flex-shrink: 0;
-    }
-
-    /* Loading Screen */
+    /* 載入畫面 */
     #loader {
-      position: absolute; inset: 0; background: #fbf6f0; z-index: 200;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      position: absolute; inset: 0; z-index: 100;
+      background: #fbf7f4; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
     }
     .spinner {
-      width: 44px; height: 44px; border: 4px solid rgba(219,106,65,0.2);
-      border-top-color: var(--coral); border-radius: 50%; animation: spin 0.8s linear infinite;
+      width: 44px; height: 44px; border: 4px solid #eddcd1;
+      border-top-color: var(--coral); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Responsive / Mobile */
-    @media (max-width: 800px) {
-      .brand-card { top: 12px; left: 12px; padding: 8px 12px; }
-      .brand-meta h1 { font-size: 15px; }
-      .top-actions { top: 70px; left: 12px; }
-      .log-panel { display: none; }
-      .sidebar {
-        top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 55%;
-        border-radius: 24px 24px 0 0; transform: translateY(0);
-      }
-      .sidebar.collapsed { transform: translateY(100%); }
-      .detail-card {
-        top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 48%;
-        border-radius: 24px 24px 0 0;
-      }
-      .hud-bar { bottom: 10px; width: 92%; overflow-x: auto; justify-content: space-between; border-radius: 18px; }
+    @media (max-width: 900px) {
+      #brand-badge { top: 12px; left: 12px; padding: 8px 12px; }
+      #list-drawer { display: none; }
+      #log-panel { display: none; }
+      #detail-card { left: 12px; right: 12px; width: auto; max-height: 48vh; bottom: 84px; top: auto; }
+      #hud-toolbar { bottom: 12px; width: calc(100% - 24px); justify-content: center; }
     }
   </style>
 
@@ -265,125 +152,59 @@
   </script>
 </head>
 <body>
-
   <div id="loader">
     <div class="spinner"></div>
-    <div style="font-weight: 800; font-size: 18px; color: var(--ink);">山光里政策島</div>
-    <div id="loader-msg" style="font-size: 13px; color: #7f736d;">正在組合山光里政策模型社區…</div>
+    <h2 style="font-size:17px;color:#db6a41;font-weight:700;">正在組合十全十美的山光里…</h2>
+    <p id="loader-status" style="font-size:12px;color:#7e6d62;">正在建置微縮黏土社區與里政島嶼</p>
   </div>
 
-  <div id="webgl-container"></div>
+  <div id="canvas-container"></div>
+  <div id="css2d-container"></div>
 
-  <!-- UI Overlay -->
-  <div class="ui-layer" id="ui-layer">
-    <!-- Brand Card -->
-    <div class="brand-card interactive">
-      <div class="brand-avatar">昭</div>
-      <div class="brand-meta">
-        <h1 data-zh="李昭靜" data-en="Lee Chao-Ching">李昭靜</h1>
-        <p data-zh="台北市汐止區山光里政策島" data-en="SHANGUANG WARD POLICY ISLAND">台北市汐止區山光里政策島</p>
-      </div>
-    </div>
-
-    <!-- Top Left Quick Actions -->
-    <div class="top-actions interactive">
-      <button class="btn-chip" id="btn-reset-cam" title="全景視角">
-        <span>⟲</span> <span data-zh="全景" data-en="Overview">全景</span>
-      </button>
-      <button class="btn-chip" id="btn-toggle-sidebar" title="政見清單">
-        <span>☰</span> <span data-zh="清單" data-en="List">清單</span>
-      </button>
-      <button class="btn-chip" id="btn-lang" title="切換語言">
-        <span>文/A</span>
-      </button>
-      <button class="btn-chip" id="btn-help" title="操作說明">?</button>
-    </div>
-
-    <!-- Live Event Log -->
-    <div class="log-panel interactive" id="log-panel">
-      <div class="log-title">
-        <div class="live-dot"></div>
-        <span data-zh="山光里協作日誌" data-en="LIVE WARD LOG">山光里協作日誌</span>
-      </div>
-      <div class="log-list" id="log-list">
-        <div>[08:00] 早安！山光里守望與關懷網絡運作中。</div>
-      </div>
-    </div>
-
-    <!-- Detail Drawer / Card -->
-    <div class="detail-card interactive" id="detail-card">
-      <button class="card-close" id="card-close-btn">✕</button>
-      <div class="eyebrow" id="card-eyebrow">POLICY DETAIL</div>
-      <div class="preview-canvas-box" id="card-preview-box">
-        <canvas id="offscreen-thumb" width="160" height="130"></canvas>
-      </div>
-      <h2 class="card-title" id="card-title">細項名稱</h2>
-      <p class="card-desc" id="card-desc">政見白話具體執行計畫與里民共好目標。</p>
-      <div class="facts-grid" id="card-facts"></div>
-      <div id="card-footer">
-        <span class="timeline-badge" id="card-timeline">上任半年執行</span>
-      </div>
-    </div>
-
-    <!-- Right Sidebar (Island & Item Directory) -->
-    <aside class="sidebar interactive" id="sidebar">
-      <div class="sidebar-header">
-        <input type="text" id="search-input" class="search-input" placeholder="搜尋里政議題、關鍵字..." />
-        <div class="tabs">
-          <button class="tab-btn active" id="tab-themes" data-zh="12大里政主題" data-en="Themes">12大里政主題</button>
-          <button class="tab-btn" id="tab-flows" data-zh="社區協作網絡" data-en="Collaborations">社區協作網絡</button>
-        </div>
-      </div>
-      <div class="sidebar-body" id="sidebar-list">
-        <!-- Rendered by JS -->
-      </div>
-    </aside>
-
-    <!-- Bottom HUD Bar -->
-    <div class="hud-bar interactive">
-      <button class="hud-btn hud-time-btn" id="btn-time-morning" title="晨運 (06:00)">晨運 06</button>
-      <button class="hud-btn hud-time-btn active" id="btn-time-day" title="早市 (10:00)">早市 10</button>
-      <button class="hud-btn hud-time-btn" id="btn-time-dusk" title="黃昏 (17:00)">黃昏 17</button>
-      <button class="hud-btn hud-time-btn" id="btn-time-night" title="夜巡 (21:00)">夜巡 21</button>
-      <div class="hud-divider"></div>
-      <button class="hud-btn active" id="btn-toggle-labels">
-        <span class="icon">🏷</span><span data-zh="名牌" data-en="Labels">名牌</span>
-      </button>
-      <button class="hud-btn active" id="btn-toggle-flows">
-        <span class="icon">⤳</span><span data-zh="協作線" data-en="Flows">協作線</span>
-      </button>
-      <button class="hud-btn" id="btn-toggle-birds">
-        <span class="icon">☖</span><span data-zh="鳥瞰" data-en="TopView">鳥瞰</span>
-      </button>
-      <button class="hud-btn" id="btn-toggle-pause">
-        <span class="icon">⏸</span><span id="txt-pause" data-zh="暫停" data-en="Pause">暫停</span>
-      </button>
-    </div>
+  <!-- 品牌卡 -->
+  <div id="brand-badge" class="glass">
+    <h1>李昭靜 ｜ 山光里政策島</h1>
+    <p>打造十全十美・優質化山光社區（微縮模型導覽）</p>
   </div>
 
-  <!-- Onboarding Modal -->
-  <div class="modal-overlay" id="help-modal" style="display: none;">
-    <div class="modal-box interactive">
-      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">歡迎來到山光里政策島！</h3>
-      <p style="font-size: 13px; color: #7a6e67; margin-bottom: 16px;">
-        候選人李昭靜以「看得見的幸福、走得通的巷弄」為理念，將里政藍圖打造成一座微縮模型小島：
-      </p>
-      <div class="modal-step">
-        <div class="modal-step-idx">1</div>
-        <div><b>點擊島嶼與建築</b>：直覺旋轉縮放探索 12 大里政政策與具體量化執行指標。</div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-idx">2</div>
-        <div><b>流動協作線與志工</b>：觀察便當送餐、巡守動線、急救箱運送等跨社區互助連結。</div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-idx">3</div>
-        <div><b>四時生活日夜切換</b>：晨運、市集到夜巡，點亮不同時段為里民點燃的街角路燈。</div>
-      </div>
-      <button class="btn-chip" id="btn-close-help" style="margin-top: 12px; width: 100%; height: 42px; background: var(--coral); color: #fff; font-weight: 700;">
-        開始探索山光里
-      </button>
+  <!-- 左側詳細面板 -->
+  <div id="detail-card" class="glass">
+    <button class="close-btn" id="btn-close-detail">✕</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="meta-pill" id="card-badge">里政主題</span>
+      <span style="font-size:11px;color:#8a796e;" id="card-timeline">全任期</span>
     </div>
+    <h2 id="card-title">環境美化專案</h2>
+    <p class="desc" id="card-desc">說明內容</p>
+    <ul class="facts" id="card-facts"></ul>
+  </div>
+
+  <!-- 右側項目清單 -->
+  <div id="list-drawer" class="glass">
+    <input type="text" id="search-input" class="search-box" placeholder="搜尋政見、地點或措施..." />
+    <div class="tab-row">
+      <button class="btn active" id="tab-pillars">十全十美政見</button>
+      <button class="btn" id="tab-collab">社區協作線</button>
+    </div>
+    <div id="drawer-items"></div>
+  </div>
+
+  <!-- 右上即時日誌 -->
+  <div id="log-panel" class="glass">
+    <div style="font-weight:700; color:#db6a41; margin-bottom:2px;">山光里每日生活日誌</div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- 底部 HUD 工具列 -->
+  <div id="hud-toolbar" class="glass">
+    <button class="btn" id="time-dawn">🌅 晨運 06:00</button>
+    <button class="btn active" id="time-day">☀️ 早市 10:00</button>
+    <button class="btn" id="time-dusk">🌇 黃昏 17:00</button>
+    <button class="btn" id="time-night">🌙 夜巡 21:00</button>
+    <div class="divider"></div>
+    <button class="btn" id="toggle-bird">🦅 鳥瞰</button>
+    <button class="btn" id="toggle-labels">🏷️ 名牌</button>
+    <button class="btn" id="toggle-flow">🚚 協作運載</button>
   </div>
 
   <script type="module">
@@ -393,1896 +214,1169 @@
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
     import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
-    /* =========================================================
-       0. MULBERRY32 PRNG (Deterministic Scene Generation)
-    ========================================================= */
-    function mulberry32(seed) {
-      return function() {
-        let t = seed += 0x6D2B79F5;
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
+    // ── 偽隨機 (mulberry32) ──
+    let seedVal = 19840502;
+    function mulberry32() {
+      let t = seedVal += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
-    const rand = mulberry32(20240901);
+    const rnd = () => mulberry32();
 
-    // Simple 2D Simplex/Perlin-like noise generator with fixed seed
-    class SimpleNoise {
-      constructor(prng) {
-        this.p = new Uint8Array(256);
-        for (let i = 0; i < 256; i++) this.p[i] = Math.floor(prng() * 256);
-      }
-      noise2D(x, y) {
-        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
-        const xf = x - Math.floor(x), yf = y - Math.floor(y);
-        const top = (1 - xf) * this.p[(X + this.p[Y]) & 255] + xf * this.p[(X + 1 + this.p[Y]) & 255];
-        const bot = (1 - xf) * this.p[(X + this.p[(Y+1)&255]) & 255] + xf * this.p[(X + 1 + this.p[(Y+1)&255]) & 255];
-        return ((1 - yf) * top + yf * bot) / 255.0 * 2.0 - 1.0;
-      }
+    // ── 穩定內建 2D 噪聲產生器（避免第三方 SimplexNoise API 不一致）──
+    const perm = new Uint8Array(512);
+    const pSource = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) pSource[i] = i;
+    for (let i = 255; i > 0; i--) {
+      const r = Math.floor(rnd() * (i + 1));
+      const tmp = pSource[i]; pSource[i] = pSource[r]; pSource[r] = tmp;
     }
-    const noise = new SimpleNoise(rand);
+    for (let i = 0; i < 512; i++) perm[i] = pSource[i & 255];
 
-    /* =========================================================
-       1. DATA DEFINITIONS (12 Islands, Sub-items, Flows, Days)
-    ========================================================= */
+    function noise2D(x, y) {
+      const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
+      const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+      let s = (x + y) * F2;
+      let i = Math.floor(x + s);
+      let j = Math.floor(y + s);
+      let t = (i + j) * G2;
+      let X0 = i - t;
+      let Y0 = j - t;
+      let x0 = x - X0;
+      let y0 = y - Y0;
+      let i1 = x0 > y0 ? 1 : 0;
+      let j1 = x0 > y0 ? 0 : 1;
+      let x1 = x0 - i1 + G2;
+      let y1 = y0 - j1 + G2;
+      let x2 = x0 - 1.0 + 2.0 * G2;
+      let y2 = y0 - 1.0 + 2.0 * G2;
+      let ii = i & 255;
+      let jj = j & 255;
+      let t0 = 0.5 - x0 * x0 - y0 * y0;
+      let n0 = 0.0, n1 = 0.0, n2 = 0.0;
+      if (t0 > 0) {
+        t0 *= t0;
+        let gi0 = perm[ii + perm[jj]] % 8;
+        let gx = [1,-1,1,-1,1,-1,0,0][gi0], gy = [1,1,-1,-1,0,0,1,-1][gi0];
+        n0 = t0 * t0 * (gx * x0 + gy * y0);
+      }
+      let t1 = 0.5 - x1 * x1 - y1 * y1;
+      if (t1 > 0) {
+        t1 *= t1;
+        let gi1 = perm[ii + i1 + perm[jj + j1]] % 8;
+        let gx = [1,-1,1,-1,1,-1,0,0][gi1], gy = [1,1,-1,-1,0,0,1,-1][gi1];
+        n1 = t1 * t1 * (gx * x1 + gy * y1);
+      }
+      let t2 = 0.5 - x2 * x2 - y2 * y2;
+      if (t2 > 0) {
+        t2 *= t2;
+        let gi2 = perm[ii + 1 + perm[jj + 1]] % 8;
+        let gx = [1,-1,1,-1,1,-1,0,0][gi2], gy = [1,1,-1,-1,0,0,1,-1][gi2];
+        n2 = t2 * t2 * (gx * x2 + gy * y2);
+      }
+      return 70.0 * (n0 + n1 + n2);
+    }
+
+    // ── DATA: 十全十美里政島 ──
     const DATA = {
       islands: [
         {
-          id: "traffic",
-          name: "巷弄好行島",
-          enName: "Safe Alleys",
-          q: 0, r: 0,
-          desc: "掃除巷弄路障、增設反光鏡與綠底標線型人行道，讓長幼出入更安心。",
-          groundType: "asphalt",
+          id: 'env_hap',
+          name: '幸福環境島',
+          category: '幸福基石',
+          coord: { q: 0, r: 0 },
+          desc: '升級原住民族公園設施與休憩動線，深化花草綠美化與公有閒置地整頓。',
+          groundType: 'park',
           items: [
-            { id: "t1", name: "綠斑馬行人友善道", desc: "主幹巷弄畫設連續型綠底標線人行道。", facts: ["新增 1,200m", "事故減 45%"], timeline: "上任半年", model: "traffic" },
-            { id: "t2", name: "微盲彎凸面反射鏡", desc: "盲彎死角更換廣角不銹鋼反光鏡並定期巡擦。", facts: ["裝設 28 處", "月巡查 2 次"], timeline: "1–2 年", model: "crossing" },
-            { id: "t3", name: "微型機車整理格", desc: "重整零碎巷地，整頓佔位廢棄車輛增加停車格。", facts: ["新增 85 格", "拖吊清障 100%"], timeline: "1–2 年", model: "parking" },
-            { id: "t4", name: "轉角夜間發光柱", desc: "夜間辨識轉角安全警示軟桿，減少擦撞事故。", facts: ["佈設 40 柱", "發光續航 12h"], timeline: "上任半年", model: "checkpoint" }
+            { id: 'eh_1', name: '原民公園圖騰聚會所', desc: '整建部落文化聚會亭與安全地坪。', facts: ['修復2座傳統木亭與集會廣場', '增加夜間安全防滑感應步道160米', '每季舉辦文化藝文交流活動'], time: '上任半年', model: 'indigenous_park' },
+            { id: 'eh_2', name: '花草微風角', desc: '髒亂轉角植栽綠化，四季百花盛開。', facts: ['活化3處公有荒廢邊角地', '栽種原生開花灌木200株', '志工定期共同認養撫育'], time: '1–2 年', model: 'flower_spot' },
+            { id: 'eh_3', name: '綠蔭休憩散步徑', desc: '平坦連貫之綠色步道，增設體健設施。', facts: ['增設4組銀髮樂活體適能機具', '汰換破損石板地坪350平方公尺'], time: '1–2 年', model: 'park_lawn' }
           ]
         },
         {
-          id: "elderly",
-          name: "銀髮樂活島",
-          enName: "Silver Care",
-          q: 1, r: 0,
-          desc: "中央溫暖廚房每日營養供餐、每週健康量測與樂齡學堂。",
-          groundType: "brick",
+          id: 'eld_hap',
+          name: '幸福長輩島',
+          category: '幸福基石',
+          coord: { q: 1, r: -1 },
+          desc: '推動健康共餐、節慶聚會、定期健康諮詢，建立弱勢長者安心支援網。',
+          groundType: 'brick',
           items: [
-            { id: "e1", name: "里鄰暖心共餐堂", desc: "每週一至五產地蔬菜直送熱食健康午餐。", facts: ["日供 120 份", "自付 30 元"], timeline: "上任半年", model: "dining" },
-            { id: "e2", name: "遠距智慧血壓站", desc: "數據直通家屬手機，異常指標即時里幹事通報。", facts: ["設立 4 站", "里民覆蓋 80%"], timeline: "1–2 年", model: "clinic" },
-            { id: "e3", name: "長輩延緩失智桌遊課", desc: "結合社區大學專業師資每週帶領動腦活動。", facts: ["每週 3 堂", "參與逾 200人"], timeline: "1–2 年", model: "stage" },
-            { id: "e4", name: "無障礙如廁改造專案", desc: "協調志工隊輔導弱勢獨居長者家中加裝防跌扶手。", facts: ["預計輔導 45戶", "防跌率 90%"], timeline: "3–4 年", model: "office" }
+            { id: 'eld_1', name: '百歲健康共餐亭', desc: '每週溫馨聚餐與營養把關，共享美味生活。', facts: ['每週2日現煮低鈉低油營養共餐', '累積受惠長者達150位', '專業營養師把關食安菜單'], time: '上任半年', model: 'canteen' },
+            { id: 'eld_2', name: '松柏敬老節慶園', desc: '重陽、端午、中秋節慶關懷慰問活動。', facts: ['三節致送平安福袋與保暖物資', '舉辦長輩風華金婚攝影展'], time: '1–2 年', model: 'community_center' },
+            { id: 'eld_3', name: '行動健康守護站', desc: '血壓測量、復健衛教諮詢每週進駐。', facts: ['聯醫巡迴車每月定點健康評估', '守護超標高風險長輩追蹤紀錄100%'], time: '3–4 年', model: 'health_station' }
           ]
         },
         {
-          id: "green",
-          name: "森態綠化島",
-          enName: "Eco Garden",
-          q: 0, r: 1,
-          desc: "閒置邊坡改造可食地景、原生樹苗補植與親水植物步道。",
-          groundType: "cobble",
+          id: 'fam_hap',
+          name: '幸福家庭島',
+          category: '幸福基石',
+          coord: { q: -1, r: 1 },
+          desc: '豐富親子假日活動，打造友善育兒步道，吸引更多年輕家庭深耕山光。',
+          groundType: 'park',
           items: [
-            { id: "g1", name: "山光芳香可食花園", desc: "里民認養種植迷迭香、薄荷與四季時蔬。", facts: ["認養箱 60 座", "綠化 450㎡"], timeline: "上任半年", model: "park" },
-            { id: "g2", name: "原生蜜源喬木林", desc: "種植台灣原生欒樹與櫻花，引回蝴蝶與山雀。", facts: ["補植 150 株", "存活率 95%"], timeline: "1–2 年", model: "tree" },
-            { id: "g3", name: "雨水集蓄澆灌站", desc: "利用活動中心屋頂收集天然雨水循環綠美化。", facts: ["儲水 15 噸", "節水 40%"], timeline: "1–2 年", model: "recycling" },
-            { id: "g4", name: "綠蔭林下石桌椅", desc: "提供長幼夏日乘涼聚會的透水磚休憩點。", facts: ["增設 12 組", "全遮光涼蔭"], timeline: "3–4 年", model: "dining" }
+            { id: 'fam_1', name: '山光童樂滑梯丘', desc: '無毒共融式微縮遊戲場與親子休憩座椅。', facts: ['採用防撞安全軟墊與無毒環保木具', '增設家長推車遮陽專區'], time: '1–2 年', model: 'playground' },
+            { id: 'fam_2', name: '週末草地故事屋', desc: '親子繪本閱讀與假日手作工作坊。', facts: ['每月雙週六固定志工爸媽講故事', '常態凝聚40組以上年輕家庭互動'], time: '上任半年', model: 'flower_spot' },
+            { id: 'fam_3', name: '嬰幼兒推車順平路網', desc: '全面平整騎樓與巷弄人行落差。', facts: ['打通順平高低差路口12處', '嬰兒車與輪椅通行無障礙化率達95%'], time: '1–2 年', model: 'traffic_safety' }
           ]
         },
         {
-          id: "safety",
-          name: "安居守望島",
-          enName: "Neighborhood Watch",
-          q: -1, r: 1,
-          desc: "強化巡守隊裝備、死角照明高畫質監控與安心求救鈴聯防。",
-          groundType: "asphalt",
+          id: 'nei_hap',
+          name: '幸福鄰里島',
+          category: '幸福基石',
+          coord: { q: 0, r: 1 },
+          desc: '原民與多元文化交流融合，凝聚社區向心力，守望相助最溫馨。',
+          groundType: 'brick',
           items: [
-            { id: "s1", name: "山光夜巡守望亭", desc: "志工巡邏整裝與交接熱點，守護夜歸里民。", facts: ["巡守隊 45 人", "巡查率 100%"], timeline: "上任半年", model: "checkpoint" },
-            { id: "s2", name: "暗巷高解析度雲端天眼", desc: "連網夜視攝影機補齊里內暗角。", facts: ["加裝 32 支", "調閱 5 分鐘出檔"], timeline: "1–2 年", model: "camera" },
-            { id: "s3", name: "太陽能感應爆閃燈", desc: "岔路巷道紅藍警示燈，警醒超速車輛。", facts: ["設置 16 處", "降速 35%"], timeline: "上任半年", model: "crossing" },
-            { id: "s4", name: "志工巡邏電動巡邏車", desc: "輕巧電動機車配備急救箱夜間安靜無噪音巡邏。", facts: ["採購 3 台", "零碳排"], timeline: "1–2 年", model: "traffic" }
+            { id: 'nei_1', name: '多元文化手作工坊', desc: '在地原民編織與手作美食文化交流。', facts: ['舉辦跨族群傳統美食展演', '培力里民文化工藝種子師資20名'], time: '1–2 年', model: 'indigenous_park' },
+            { id: 'nei_2', name: '友善鄰里泡茶廊', desc: '設於里辦旁的露天茶几，里民隨時來開講。', facts: ['昭靜每週定時駐點傾聽里民心聲', '現場即時記錄追蹤率100%'], time: '上任半年', model: 'community_center' },
+            { id: 'nei_3', name: '跳蚤二手互助市集', desc: '資源永續循環，家戶好物惜福共享。', facts: ['每年春秋兩季號召里民分享閒置用品', '所得提撥社區急難救助金'], time: '3–4 年', model: 'canteen' }
           ]
         },
         {
-          id: "recycle",
-          name: "循環淨零島",
-          enName: "Zero Waste",
-          q: -1, r: 0,
-          desc: "黃金資收站點數換生活品、二手小家電維修站與堆肥站。",
-          groundType: "cobble",
+          id: 'clean_env',
+          name: '環境更乾淨島',
+          category: '核心政見',
+          coord: { q: 1, r: 0 },
+          desc: '全面清除死角髒亂點，增設防狗便清潔箱，落實每週清消巡查。',
+          groundType: 'asphalt',
           items: [
-            { id: "r1", name: "黃金回收便利站", desc: "分類紙箱塑膠換取環保洗潔精與實用好禮。", facts: ["每週 2 回", "月收 4.5 噸"], timeline: "上任半年", model: "recycling" },
-            { id: "r2", name: "木匠師傅維修工坊", desc: "推動修繕取代丟棄，二手電扇檯燈妙手回春。", facts: ["修復率 78%", "服務 300 件/年"], timeline: "1–2 年", model: "office" },
-            { id: "r3", name: "廚餘黑金落葉堆肥槽", desc: "生廚餘與落葉發酵成有機肥，回饋花圃認養戶。", facts: ["減廢 15%", "年產 2 噸土"], timeline: "1–2 年", model: "park" }
+            { id: 'cln_1', name: '死角髒亂快清隊', desc: '里民通報後24小時內完成初勘整飭。', facts: ['列管清查里內易被丟垃圾熱點7處', '推動跨局處聯合稽查與即時清運'], time: '上任半年', model: 'cleanup_station' },
+            { id: 'cln_2', name: '寵物友善便袋亭', desc: '公園與散步路段廣設自取清潔袋。', facts: ['設置8處自動取袋回收箱', '草皮狗便投訴降低80%以上'], time: '上任半年', model: 'flower_spot' },
+            { id: 'cln_3', name: '水溝通暢大排查', desc: '汛期前清理易堵塞排水溝淤泥與落葉。', facts: ['每年清淤達1200公尺溝渠', '消除病媒蚊孳生溫床，降低登革熱風險'], time: '1–2 年', model: 'traffic_safety' }
           ]
         },
         {
-          id: "culture",
-          name: "文化共學島",
-          enName: "Culture & Life",
-          q: 0, r: -1,
-          desc: "廟埕說故事露天電影院、走讀山光歷史與四季藝文節慶。",
-          groundType: "brick",
+          id: 'safe_life',
+          name: '生活更安全島',
+          category: '核心政見',
+          coord: { q: -1, r: 0 },
+          desc: '加強夜間照明、道路平整、反光鏡校正，建構守望相助防詐防震安全網。',
+          groundType: 'asphalt',
           items: [
-            { id: "c1", name: "山光廟埕星空聚場", desc: "夏夜老少咸宜草地電影放映與里民音樂會。", facts: ["季辦 1 場", "場均 180 人"], timeline: "上任半年", model: "stage" },
-            { id: "c2", name: "山林古道走讀牌樓", desc: "復刻早期煤礦與山林水文故事解說導覽牌。", facts: ["設立 6 處", "志工解說 12 場"], timeline: "1–2 年", model: "shrine" },
-            { id: "c3", name: "手作烘焙分享空間", desc: "借用活動中心烹飪教室開辦親子米食文化課。", facts: ["月辦 2 次", "學費全免"], timeline: "1–2 年", model: "dining" }
+            { id: 'saf_1', name: '明亮山光LED路燈網', desc: '暗巷死角加裝高亮度節能感應路燈。', facts: ['汰換升級LED智慧燈具45盞', '夜間人行照度提升2.5倍'], time: '上任半年', model: 'guard_post' },
+            { id: 'saf_2', name: '巷弄路口減速與反光鏡', desc: '盲彎加裝廣角鏡與鮮明減速標線。', facts: ['校正與新設凸面反光鏡15面', '降低狹窄死角擦撞事故'], time: '1–2 年', model: 'traffic_safety' },
+            { id: 'saf_3', name: '社區防詐與防災巡邏', desc: '結合派出所與巡守隊，定期宣導最新詐騙手法。', facts: ['每月巡守隊定期巡檢巷弄死角', '針對獨居長輩進行實體防詐宣導'], time: '上任半年', model: 'guard_post' }
           ]
         },
         {
-          id: "kids",
-          name: "童趣安育島",
-          enName: "Kids & Play",
-          q: 1, r: -1,
-          desc: "通學步道安全導護、共融無毒小遊具與課後陪讀據點。",
-          groundType: "cobble",
+          id: 'peace_eld',
+          name: '長者更安心島',
+          category: '核心政見',
+          coord: { q: 0, r: -1 },
+          desc: '落實獨居長者定期電話與到府訪視，緊急通報救援手環補助申請支援。',
+          groundType: 'brick',
           items: [
-            { id: "k1", name: "山光安全通學接送道", desc: "國小上下學時段實施導護人車分流保護安全。", facts: ["導護 18 人", "零事故 365 天"], timeline: "上任半年", model: "traffic" },
-            { id: "k2", name: "原木共融攀爬溜滑梯", desc: "汰換老舊生鏽鐵滑梯，改為自然原木安全地墊場。", facts: ["符合 CNS 認證", "容量 30 童"], timeline: "1–2 年", model: "park" },
-            { id: "k3", name: "彩虹課後伴讀小屋", desc: "退休教師與大專志工提供弱勢家庭孩子免費課輔。", facts: ["課輔 25 生", "伴讀 500 小時"], timeline: "上任半年", model: "office" },
-            { id: "k4", name: "幼兒推車專屬停靠區", desc: "公園旁增設遮陽遮雨推車專用泊位。", facts: ["可停 12 台", "防雨防曬"], timeline: "1–2 年", model: "parking" }
+            { id: 'peld_1', name: '獨居長輩暖心敲門人', desc: '志工每週兩次溫暖問候與生活補給。', facts: ['常態列冊關懷獨居長者42戶', '發放緊急通報與求援隨身卡'], time: '上任半年', model: 'community_center' },
+            { id: 'peld_2', name: '居家安全扶手諮詢', desc: '協助申請衛浴防滑、走廊扶手補助。', facts: ['協助25個家庭完成高齡防跌居家改裝', '申請市府補助全額指引代辦'], time: '1–2 年', model: 'health_station' },
+            { id: 'peld_3', name: '銀髮數位用手機課', desc: '教長輩用LINE看里訊、視訊報平安。', facts: ['開辦長者智慧型手機互動班', '累積學員突破100人次'], time: '1–2 年', model: 'digital_screen' }
           ]
         },
         {
-          id: "pet",
-          name: "毛孩友善島",
-          enName: "Pet Paradise",
-          q: 2, r: -1,
-          desc: "浪浪結紮絕育照顧、公園毛孩敏捷草皮與便便袋補給箱。",
-          groundType: "cobble",
+          id: 'warm_fam',
+          name: '家庭更幸福島',
+          category: '核心政見',
+          coord: { q: -1, r: 2 },
+          desc: '媒合社福物資銀行，提供弱勢家庭兒少課後陪伴與急難輔助方案。',
+          groundType: 'park',
           items: [
-            { id: "p1", name: "毛孩放繩自在跑跑草地", desc: "雙層防脫逃圍欄與寵物飲水清洗台。", facts: ["面積 220㎡", "安全雙道門"], timeline: "1–2 年", model: "park" },
-            { id: "p2", name: "狗便清潔袋補充箱", desc: "全里散步熱點設置生物可分解環保便袋箱。", facts: ["建置 14 站", "補充 100%"], timeline: "上任半年", model: "recycling" },
-            { id: "p3", name: "TNR 浪浪溫柔絕育專案", desc: "與愛媽志工合作落實誘捕絕育疫苗放回。", facts: ["絕育率 92%", "流浪動物減量"], timeline: "1–2 年", model: "heart" },
-            { id: "p4", name: "里民毛孩狂犬病義診", desc: "協調獸醫師公會到里辦公室提供晶片登記疫苗施打。", facts: ["年辦 2 梯", "施打 150 隻"], timeline: "上任半年", model: "clinic" }
+            { id: 'wfam_1', name: '希望物資轉運站', desc: '結合民間愛心資源，白米尿布直達急需戶。', facts: ['定點發放物資箱，保障弱勢基本生活', '連結愛心超商惜食鮮乳兌換券'], time: '上任半年', model: 'canteen' },
+            { id: 'wfam_2', name: '課後星星陪伴學堂', desc: '志工大專生課輔陪伴，父母工作更放心。', facts: ['提供國小學童每週課後作業輔導', '寒暑假安排藝文與運動成長育樂營'], time: '3–4 年', model: 'indigenous_park' },
+            { id: 'wfam_3', name: '家庭急難救助即時通', desc: '突發事故公私協力單一窗口迅速支援。', facts: ['重大急難48小時內啟動慰助評估', '協助連結社福機構與慈善基金會'], time: '上任半年', model: 'community_center' }
           ]
         },
         {
-          id: "disaster",
-          name: "韌性防災島",
-          enName: "Resilient Defense",
-          q: 2, r: 0,
-          desc: "邊坡土壤感測預警、水患沙包自主站與緊急急救箱配置。",
-          groundType: "asphalt",
+          id: 'prompt_serv',
+          name: '服務更即時島',
+          category: '核心政見',
+          coord: { q: 2, r: -1 },
+          desc: '隨呼即應！里長昭靜全日待命，打造透明、有感、有溫度的高效里辦。',
+          groundType: 'asphalt',
           items: [
-            { id: "d1", name: "山坡即時雨量微感測器", desc: "暴雨時自動連線里民 LINE 發送潛勢區預警。", facts: ["建置 5 處", "提早 40 分警報"], timeline: "1–2 年", model: "camera" },
-            { id: "d2", name: "社區自主防汛沙包站", desc: "易積水低窪處設置快速防水擋板與沙包自取箱。", facts: ["常備 300 包", "吸水膨脹型 50 個"], timeline: "上任半年", model: "checkpoint" },
-            { id: "d3", name: "戶外自動心臟電擊器 AED", desc: "設於 24 小時明亮遮雨亭，全里急救黃金 4 分鐘。", facts: ["新增 3 台", "認證 CPR 志工 80 人"], timeline: "上任半年", model: "heart" }
+            { id: 'psrv_1', name: '昭靜行動里民會客室', desc: '每週巡迴各鄰街角，面對面傾聽即刻辦。', facts: ['每月巡迴全里4個主要集會點', '里民建議案件即時登錄進度公開'], time: '上任半年', model: 'community_center' },
+            { id: 'psrv_2', name: '工務維修追蹤綠色通道', desc: '水電路燈坑洞破損，管考結案不推託。', facts: ['通報區公所與各管線單位列管追蹤', '一般路面坑洞48小時內回報進度'], time: '上任半年', model: 'guard_post' },
+            { id: 'psrv_3', name: '里政進度透明公告牆', desc: '經費花費公開、年度執行進度一目了然。', facts: ['每半年印發與數位公告經費支用報告', '落實誠信與里民知的權利'], time: '1–2 年', model: 'digital_screen' }
           ]
         },
         {
-          id: "smart",
-          name: "智慧里民島",
-          enName: "Smart Connect",
-          q: 1, r: 1,
-          desc: "山光里 LINE 官方報修小幫手、里民電子廣播牆與 Wi-Fi 熱點。",
-          groundType: "asphalt",
+          id: 'digit_serv',
+          name: '數位服務島',
+          category: '核心政見',
+          coord: { q: 1, r: -2 },
+          desc: '建立山光里專屬LINE官方帳號，防災警訊、垃圾車動態與停水通知一手掌握。',
+          groundType: 'asphalt',
           items: [
-            { id: "sm1", name: "LINE 隨手拍一鍵報修", desc: "路燈不亮、路面凹陷拍照即刻派工追蹤進度。", facts: ["24h 內回覆", "結案率 98%"], timeline: "上任半年", model: "speaker" },
-            { id: "sm2", name: "節能電子公佈欄", desc: "取代凌亂傳統紙張公告，即時氣象與市政福利。", facts: ["設置 4 塊", "省紙 12,000 張"], timeline: "1–2 年", model: "office" },
-            { id: "sm3", name: "社區戶外免費 Wi-Fi", desc: "活動廣場與公園綠地提供穩定免費無線網路。", facts: ["覆蓋率 90%", "同時連線 200 人"], timeline: "1–2 年", model: "camera" }
-          ]
-        },
-        {
-          id: "care",
-          name: "暖心關懷島",
-          enName: "Care Network",
-          q: 0, r: 2,
-          desc: "弱勢單親急難救助金、獨居愛心送暖便當與寒冬物資站。",
-          groundType: "brick",
-          items: [
-            { id: "cr1", name: "獨居長者暖心餐點直送", desc: "志工親自按鈴送餐兼確認身體安康狀況。", facts: ["日訪 35 戶", "365 天無休"], timeline: "上任半年", model: "heart" },
-            { id: "cr2", name: "山光愛心愛心實物糧倉", desc: "募集善心企業乾糧米麵，即時發放應急家庭。", facts: ["常備 50 份", "幫助 120 戶次"], timeline: "上任半年", model: "recycling" },
-            { id: "cr3", name: "法律與心理免費諮詢日", desc: "專業律師里民日駐點諮詢，解開產權糾紛與家務煩惱。", facts: ["月辦 2 場", "解答 80 件"], timeline: "1–2 年", model: "office" }
-          ]
-        },
-        {
-          id: "office",
-          name: "里民客廳島",
-          enName: "Ward Center",
-          q: -1, r: 2,
-          desc: "昭靜里民服務處、泡茶傾聽民意交流站與民主提案信箱。",
-          groundType: "brick",
-          items: [
-            { id: "of1", name: "山光里民大客廳泡茶棧", desc: "不分黨派天天開門，一杯熱茶親自聽取里民建言。", facts: ["平日 08-20", "李昭靜親自坐鎮"], timeline: "上任半年", model: "office" },
-            { id: "of2", name: "公民提案小額參與式預算", desc: "每年提撥經費由里民直接票選想改建的公共空間。", facts: ["預算 30 萬", "里民票選 100%"], timeline: "1–2 年", model: "stage" },
-            { id: "of3", name: "工具圖書免費互借站", desc: "電鑽、高枝剪、梯子免自購，鄰里共享珍惜資源。", facts: ["常備工具 45 種", "借閱破千次"], timeline: "上任半年", model: "sweeper" }
+            { id: 'dsrv_1', name: '山光里專屬LINE@系統', desc: '停水停電搶修進度、疫苗施打一鍵查詢。', facts: ['加入人數目標覆蓋全里家戶60%以上', '分流關鍵推播，杜絕垃圾訊息干擾'], time: '上任半年', model: 'digital_screen' },
+            { id: 'dsrv_2', name: '拍照反映問題快通車', desc: '路見不平隨手拍上傳，定位精準快速修。', facts: ['拍照定位直傳里辦處理系統', '處理前後照片對照回饋，里民最安心'], time: '上任半年', model: 'traffic_safety' },
+            { id: 'dsrv_3', name: '長者友善大字電子看板', desc: '重要公共集會所裝設超大字防災資訊屏。', facts: ['設置3處大螢幕顯示汐止即時氣象與通知', '同步宣傳銀髮活動與防詐資訊'], time: '1–2 年', model: 'digital_screen' }
           ]
         }
       ],
       collaborations: [
-        { id: "collab1", from: "elderly", to: "care", item: "愛心熱便當", role: "送餐志工隊", level: "official" },
-        { id: "collab2", from: "green", to: "recycle", item: "廚餘堆肥泥", role: "環保農耕隊", level: "official" },
-        { id: "collab3", from: "safety", to: "traffic", item: "反光鏡擦拭組", role: "巡守機動隊", level: "thematic" },
-        { id: "collab4", from: "disaster", to: "elderly", item: "行動急救箱", role: "防災急救員", level: "official" },
-        { id: "collab5", from: "kids", to: "culture", item: "說故事道具箱", role: "彩虹課輔志工", level: "thematic" },
-        { id: "collab6", from: "office", to: "smart", item: "里民提案清單", role: "李昭靜與青年里幹事", level: "official" },
-        { id: "collab7", from: "pet", to: "green", item: "除草清消桶", role: "毛孩志願者", level: "pending" }
+        { id: 'c1', from: 'clean_env', to: 'env_hap', item: '花苗與有機肥', courier: '環保志工', level: 'official', desc: '將清運與整理後的乾淨土地，轉化為里民認養的花圃' },
+        { id: 'c2', from: 'eld_hap', to: 'peace_eld', item: '溫熱愛心便當', courier: '志工媽媽', level: 'official', desc: '共餐廚房現做便當，定時配送至獨居長者家門口' },
+        { id: 'c3', from: 'safe_life', to: 'digit_serv', item: '防詐緊急通報單', courier: '巡守隊員', level: 'thematic', desc: '巡邏發現新型詐騙手法，第一時間上傳數位系統發布全里推播' },
+        { id: 'c4', from: 'fam_hap', to: 'warm_fam', item: '二手童書文具', courier: '年輕家長', level: 'thematic', desc: '家庭島募集家中小朋友成長閒置書籍，轉贈弱勢學童' },
+        { id: 'c5', from: 'prompt_serv', to: 'safe_life', item: '路面修繕工單', courier: '李昭靜里長', level: 'official', desc: '行動會客室蒐集路燈盲區，協調公所工程隊進駐施工' },
+        { id: 'c6', from: 'nei_hap', to: 'eld_hap', item: '原民手工藝材料', courier: '文化青年', level: 'pending', desc: '將部落編織傳統帶到長輩共餐區，作為延緩失智手腦活動' },
+        { id: 'c7', from: 'digit_serv', to: 'prompt_serv', item: '即時拍照反映單', courier: '熱心上班族', level: 'official', desc: '通勤時手機上傳水溝淤積，里辦公處當日立案會勘' }
       ],
-      dayCycles: [
-        { id: "morning", name: "晨運時刻", min: 360, highlights: ["e1", "g1", "k1", "cr1"] },
-        { id: "day", name: "熱絡早市", min: 600, highlights: ["t1", "e1", "r1", "c1", "of1", "sm1"] },
-        { id: "dusk", name: "黃昏放學", min: 1020, facts: "人車分流放學", highlights: ["k1", "k2", "p1", "s1"] },
-        { id: "night", name: "平安夜巡", min: 1260, highlights: ["s1", "s2", "t4", "d3", "of1"] }
+      timeSlots: [
+        { id: 'dawn', name: '晨運 06:00', hour: 6, sunAngle: 0.25, ambient: 0x8ea2be, dir: 0xffe2b8, activeItems: ['eh_1', 'eh_3', 'eld_1'] },
+        { id: 'day', name: '早市 10:00', hour: 10, sunAngle: 1.1, ambient: 0xfceee6, dir: 0xffffff, activeItems: ['eld_1', 'cln_1', 'psrv_1', 'dsrv_1'] },
+        { id: 'dusk', name: '黃昏 17:00', hour: 17, sunAngle: 2.8, ambient: 0xf7cfbc, dir: 0xffa566, activeItems: ['fam_1', 'fam_2', 'saf_1', 'wfam_1'] },
+        { id: 'night', name: '夜巡 21:00', hour: 21, sunAngle: 4.1, ambient: 0x223048, dir: 0x5577aa, activeItems: ['saf_1', 'saf_3', 'peld_1', 'dsrv_3'] }
       ]
     };
 
-    /* =========================================================
-       2. MATH, HEX GRID & PROCEDURAL GROUND TEXTURES
-    ========================================================= */
+    // ── 常數數值 ──
     const R = 2.02;
     const SPACING = 2.28;
     const TOP = 0.65;
     const WATER_Y = -0.18;
 
-    function axialToWorld(q, r) {
+    function hexToWorld(q, r) {
       const x = Math.sqrt(3) * SPACING * (q + r / 2);
       const z = 1.5 * SPACING * r;
-      return new THREE.Vector3(x, TOP, z);
+      return { x, z };
     }
 
-    // Build procedural 256x256 canvas textures
-    function createGroundCanvasTexture(type) {
-      const cvs = document.createElement('canvas');
-      cvs.width = 256; cvs.height = 256;
-      const ctx = cvs.getContext('2d');
+    // ── Three.js 場景變數 ──
+    let scene, camera, renderer, labelRenderer, controls;
+    const container = document.getElementById('canvas-container');
+    const labelContainer = document.getElementById('css2d-container');
 
-      if (type === 'brick') {
-        ctx.fillStyle = '#eedcd0';
-        ctx.fillRect(0, 0, 256, 256);
-        ctx.fillStyle = '#debeaa';
-        const w = 32, h = 16;
-        for (let y = 0; y < 256; y += h) {
-          const shift = (y / h) % 2 === 0 ? 0 : w / 2;
-          for (let x = -w; x < 256; x += w) {
-            ctx.strokeRect(x + shift, y, w, h);
-            if ((x + y) % 5 === 0) {
-              ctx.fillRect(x + shift + 2, y + 2, w - 4, h - 4);
-            }
-          }
+    let sunLight, hemiLight;
+    const islandMeshMap = new Map();
+    const itemNodes = [];
+    const interactiveObjects = [];
+
+    // InstancedMesh Kit
+    const instanceRegistry = {};
+    function pushPart(kind, matrix, colorHex) {
+      if (!instanceRegistry[kind]) instanceRegistry[kind] = [];
+      instanceRegistry[kind].push({ matrix: matrix.clone(), color: new THREE.Color(colorHex) });
+    }
+
+    // ── 地面動態貼圖 ──
+    function createGroundCanvasTexture(type) {
+      const cv = document.createElement('canvas');
+      cv.width = 256; cv.height = 256;
+      const ctx = cv.getContext('2d');
+      if (type === 'park') {
+        ctx.fillStyle = '#9cb88d'; ctx.fillRect(0,0,256,256);
+        ctx.fillStyle = '#8fad7f';
+        for(let i=0;i<400;i++){ ctx.fillRect(rnd()*256, rnd()*256, 3, 3); }
+      } else if (type === 'brick') {
+        ctx.fillStyle = '#dfcca8'; ctx.fillRect(0,0,256,256);
+        ctx.strokeStyle = '#cbbb98'; ctx.lineWidth = 2;
+        for(let y=0; y<256; y+=16){
+          ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(256,y); ctx.stroke();
+          const off = (y%32===0)?0:8;
+          for(let x=off; x<256; x+=16){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+16); ctx.stroke(); }
         }
-      } else if (type === 'asphalt') {
-        ctx.fillStyle = '#656360';
-        ctx.fillRect(0, 0, 256, 256);
-        ctx.fillStyle = '#7a7774';
-        for (let i = 0; i < 350; i++) {
-          ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
-        }
-        ctx.strokeStyle = '#d9d0be';
-        ctx.setLineDash([12, 12]);
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(128, 128, 70, 0, Math.PI * 2);
-        ctx.stroke();
-      } else { // cobble
-        ctx.fillStyle = '#dfd6c8';
-        ctx.fillRect(0, 0, 256, 256);
-        ctx.fillStyle = '#b8aa97';
-        for (let i = 0; i < 90; i++) {
-          ctx.beginPath();
-          ctx.arc(Math.random() * 256, Math.random() * 256, 6 + Math.random() * 7, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      } else {
+        ctx.fillStyle = '#8c8a87'; ctx.fillRect(0,0,256,256);
+        ctx.fillStyle = '#7a7875';
+        for(let i=0;i<300;i++){ ctx.fillRect(rnd()*256, rnd()*256, 2, 2); }
       }
-      const tex = new THREE.CanvasTexture(cvs);
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
+      const tex = new THREE.CanvasTexture(cv);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
       return tex;
     }
 
-    const groundTextures = {
-      brick: createGroundCanvasTexture('brick'),
-      asphalt: createGroundCanvasTexture('asphalt'),
-      cobble: createGroundCanvasTexture('cobble')
-    };
+    // ── 建立山巒盆地與水面 ──
+    function buildLandscape() {
+      const basinGeo = new THREE.PlaneGeometry(160, 160, 120, 120);
+      basinGeo.rotateX(-Math.PI / 2);
+      const pos = basinGeo.attributes.position;
+      const colors = [];
+      const colMountainHigh = new THREE.Color('#58694f');
+      const colMountainLow = new THREE.Color('#94a883');
+      const colShore = new THREE.Color('#dfd1b8');
 
-    /* =========================================================
-       3. THREE.JS SCENE SETUP, SHADERS, LIGHTS & DAY CYCLE
-    ========================================================= */
-    let renderer, cssRenderer, scene, camera, controls;
-    let skyMesh, waterMesh, sunLight, fillLight, hemiLight, terrainMesh;
-    let isBirdsEye = false;
-    let isPaused = false;
-    let showLabels = true;
-    let showFlows = true;
-    let isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let currentLang = new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'zh';
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        const dist = Math.hypot(x, z);
+        let h = -0.3;
+        if (dist > 18) {
+          const smooth = THREE.MathUtils.smoothstep(dist, 18, 55);
+          const noise = noise2D(x * 0.035, z * 0.035) * 4.5 + noise2D(x * 0.08, z * 0.08) * 1.5;
+          h += smooth * (6.5 + noise);
+          h = Math.floor(h * 2.2) / 2.2;
+        }
+        pos.setY(i, h);
 
-    let clockMinutes = 600; // start 10:00 AM
-    let activeDayCycle = DATA.dayCycles[1];
-
-    // Day/Night Keyframes from prompt
-    const DAY_KEYFRAMES = [
-      { min: 0,    top: 0x1e2c58, hor: 0x3f4f80, sunC: 0xb4c2ff, sunI: 1.15, hSky: 0x94a2d8, hGnd: 0x64566a, hI: 1.85, night: 1.0,  wat: 0x5a88b2 },
-      { min: 300,  top: 0x26365f, hor: 0x4c5688, sunC: 0xb8c4ff, sunI: 1.0,  hSky: 0x96a4da, hGnd: 0x66586c, hI: 1.85, night: 1.0,  wat: 0x5c8ab4 },
-      { min: 360,  top: 0x7f8fc4, hor: 0xf6c3a6, sunC: 0xffb48a, sunI: 1.3,  hSky: 0xf3c6b5, hGnd: 0x6b5a5a, hI: 1.1,  night: 0.55, wat: 0x8fb7c4 },
-      { min: 450,  top: 0xa9d1ea, hor: 0xfbe6d3, sunC: 0xffe2c4, sunI: 2.4,  hSky: 0xeaf2f6, hGnd: 0x8a7a68, hI: 1.25, night: 0.0,  wat: 0x9fcfd6 },
-      { min: 720,  top: 0x9fd0ec, hor: 0xf4eee3, sunC: 0xfff1de, sunI: 2.9,  hSky: 0xeef6fa, hGnd: 0x8f8270, hI: 1.35, night: 0.0,  wat: 0xa9d8db },
-      { min: 960,  top: 0xa6cfe6, hor: 0xf8e7d2, sunC: 0xffe3c0, sunI: 2.5,  hSky: 0xf1efe8, hGnd: 0x8a7a66, hI: 1.25, night: 0.0,  wat: 0x9fcbd2 },
-      { min: 1065, top: 0x8b8fc4, hor: 0xf7b98f, sunC: 0xff9f6a, sunI: 1.8,  hSky: 0xf6d2bc, hGnd: 0x7d6660, hI: 1.2,  night: 0.3,  wat: 0x93a9bd },
-      { min: 1140, top: 0x5a5e9e, hor: 0xd99aa6, sunC: 0xff9a7a, sunI: 1.3,  hSky: 0xc0b2e0, hGnd: 0x655868, hI: 1.35, night: 0.75, wat: 0x6a7cab },
-      { min: 1260, top: 0x22325f, hor: 0x445488, sunC: 0xc0ccff, sunI: 1.2,  hSky: 0x98a8dc, hGnd: 0x685a6e, hI: 1.9,  night: 1.0,  wat: 0x5a88b2 },
-      { min: 1440, top: 0x1e2c58, hor: 0x3f4f80, sunC: 0xb4c2ff, sunI: 1.15, hSky: 0x94a2d8, hGnd: 0x64566a, hI: 1.85, night: 1.0,  wat: 0x5a88b2 }
-    ];
-
-    function getInterpolatedDayFrame(m) {
-      const min = m % 1440;
-      let i = 0;
-      while (i < DAY_KEYFRAMES.length - 1 && DAY_KEYFRAMES[i+1].min <= min) i++;
-      const k1 = DAY_KEYFRAMES[i];
-      const k2 = DAY_KEYFRAMES[i+1] || DAY_KEYFRAMES[0];
-      const span = (k2.min === 0 ? 1440 : k2.min) - k1.min;
-      const t = span <= 0 ? 0 : (min - k1.min) / span;
-
-      const cTop = new THREE.Color(k1.top).lerp(new THREE.Color(k2.top), t);
-      const cHor = new THREE.Color(k1.hor).lerp(new THREE.Color(k2.hor), t);
-      const cSun = new THREE.Color(k1.sunC).lerp(new THREE.Color(k2.sunC), t);
-      const cHSky = new THREE.Color(k1.hSky).lerp(new THREE.Color(k2.hSky), t);
-      const cHGnd = new THREE.Color(k1.hGnd).lerp(new THREE.Color(k2.hGnd), t);
-      const cWat = new THREE.Color(k1.wat).lerp(new THREE.Color(k2.wat), t);
-
-      return {
-        top: cTop, hor: cHor, sunColor: cSun,
-        sunI: THREE.MathUtils.lerp(k1.sunI, k2.sunI, t),
-        hSky: cHSky, hGnd: cHGnd,
-        hI: THREE.MathUtils.lerp(k1.hI, k2.hI, t),
-        night: THREE.MathUtils.lerp(k1.night, k2.night, t),
-        wat: cWat
-      };
-    }
-
-    /* =========================================================
-       4. INSTANCED BUILDING PARTS SYSTEM (KIT)
-    ========================================================= */
-    const buildingKitEntries = []; // { kind, matrix, baseColor, id, islandId }
-    const buildingArchetypes = {};
-
-    const sharedGeometries = {
-      box: new THREE.BoxGeometry(1, 1, 1),
-      rbox: new RoundedBoxGeometry(1, 1, 1, 2, 0.12),
-      cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 14),
-      cone: new THREE.ConeGeometry(0.5, 1, 14),
-      sphere: new THREE.SphereGeometry(0.5, 14, 12),
-      ico: new THREE.IcosahedronGeometry(0.5, 1),
-      hip: new THREE.ConeGeometry(0.707, 0.5, 4).rotateY(Math.PI / 4),
-      torus: new THREE.TorusGeometry(0.5, 0.16, 8, 16),
-      prism: new THREE.CylinderGeometry(0.5, 0.5, 1, 3),
-      glowbox: new THREE.BoxGeometry(1, 1, 1),
-      glowsphere: new THREE.SphereGeometry(0.4, 12, 10)
-    };
-
-    const solidClayMaterial = new THREE.MeshStandardMaterial({
-      roughness: 0.78,
-      metalness: 0.02
-    });
-
-    const glowClayMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      emissive: new THREE.Color(0xffc777),
-      emissiveIntensity: 0.6,
-      roughness: 0.5
-    });
-
-    let instancedMeshGroups = {}; // kind -> InstancedMesh
-
-    function addPart(kind, mtx, colorHex, id = null, islandId = null) {
-      // Jitter scale slightly to avoid coplanar z-fighting
-      const jitter = 1.0 + (rand() - 0.5) * 0.012;
-      const m = mtx.clone();
-      m.scale(new THREE.Vector3(jitter, jitter, jitter));
-      buildingKitEntries.push({ kind, matrix: m, color: new THREE.Color(colorHex), id, islandId });
-    }
-
-    /* Build cute clay archetypes */
-    function buildModelArchetype(modelKind, rootMtx, id, islandId) {
-      const helper = (kind, pos, rot, scl, col) => {
-        const m = new THREE.Matrix4();
-        m.makeRotationFromEuler(new THREE.Euler(rot[0], rot[1], rot[2]));
-        m.setPosition(pos[0], pos[1], pos[2]);
-        m.scale(new THREE.Vector3(scl[0], scl[1], scl[2]));
-        const combined = rootMtx.clone().multiply(m);
-        addPart(kind, combined, col, id, islandId);
-      };
-
-      // Clay palette colors
-      const coral = 0xdb6a41;
-      const ink = 0x292424;
-      const cream = 0xfff7f0;
-      const yellow = 0xfdea8d;
-      const stone = 0xc8b8aa;
-      const green = 0x74866c;
-      const teal = 0x448292;
-      const wood = 0xba8c66;
-
-      switch(modelKind) {
-        case "office": // Little ward office + tea table
-          helper("rbox", [0, 0.35, 0], [0, 0, 0], [0.8, 0.65, 0.7], cream);
-          helper("hip", [0, 0.85, 0], [0, 0, 0], [1.05, 0.45, 0.95], coral);
-          helper("box", [0, 0.28, 0.36], [0, 0, 0], [0.22, 0.42, 0.05], wood);
-          helper("glowbox", [0.24, 0.4, 0.36], [0, 0, 0], [0.18, 0.18, 0.04], yellow);
-          helper("cylinder", [0.42, 0.15, 0.35], [0, 0, 0], [0.35, 0.28, 0.35], wood); // tea table
-          break;
-        case "checkpoint": // Watch pavilion with alert beacon
-          helper("cylinder", [0, 0.3, 0], [0, 0, 0], [0.5, 0.6, 0.5], cream);
-          helper("cone", [0, 0.72, 0], [0, 0, 0], [0.7, 0.35, 0.7], teal);
-          helper("glowsphere", [0, 0.98, 0], [0, 0, 0], [0.2, 0.2, 0.2], yellow);
-          helper("box", [0, 0.08, 0.3], [0, 0, 0], [0.7, 0.15, 0.1], coral);
-          break;
-        case "park": // Park with playground slide & trees
-          helper("cylinder", [-0.2, 0.15, 0], [0, 0, 0], [0.4, 0.15, 0.4], stone);
-          helper("ico", [-0.2, 0.5, 0], [0, rand()*3, 0], [0.55, 0.65, 0.55], green);
-          helper("box", [0.25, 0.3, -0.1], [0, 0, -0.4], [0.18, 0.7, 0.35], yellow); // slide
-          helper("box", [0.12, 0.12, 0.3], [0, 0.3, 0], [0.45, 0.12, 0.18], wood); // bench
-          break;
-        case "recycling": // Resource sorting carts & bins
-          helper("box", [-0.22, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], green);
-          helper("box", [0, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], yellow);
-          helper("box", [0.22, 0.2, 0], [0, 0, 0], [0.25, 0.38, 0.25], teal);
-          helper("torus", [0, 0.1, 0.25], [Math.PI/2, 0, 0], [0.35, 0.35, 0.35], stone);
-          break;
-        case "traffic": // Traffic mini crossing & safety bollard
-          helper("box", [0, 0.04, 0], [0, 0, 0], [0.7, 0.05, 0.6], ink);
-          helper("box", [-0.2, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
-          helper("box", [0.0, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
-          helper("box", [0.2, 0.06, 0], [0, 0, 0], [0.08, 0.06, 0.5], cream);
-          helper("cylinder", [0.35, 0.35, 0.25], [0, 0, 0], [0.08, 0.7, 0.08], coral);
-          break;
-        case "stage": // Community stage / open screen
-          helper("rbox", [0, 0.15, 0], [0, 0, 0], [0.85, 0.2, 0.7], wood);
-          helper("box", [0, 0.5, -0.28], [0, 0, 0], [0.8, 0.55, 0.08], cream);
-          helper("glowsphere", [-0.35, 0.78, -0.2], [0, 0, 0], [0.12, 0.12, 0.12], yellow);
-          helper("glowsphere", [0.35, 0.78, -0.2], [0, 0, 0], [0.12, 0.12, 0.12], yellow);
-          break;
-        case "shrine": // Cultural mini torii / archway
-          helper("cylinder", [-0.3, 0.45, 0], [0, 0, 0], [0.1, 0.9, 0.1], coral);
-          helper("cylinder", [0.3, 0.45, 0], [0, 0, 0], [0.1, 0.9, 0.1], coral);
-          helper("box", [0, 0.88, 0], [0, 0, 0], [0.85, 0.15, 0.18], coral);
-          helper("hip", [0, 0.98, 0], [0, 0, 0], [0.95, 0.15, 0.24], yellow);
-          break;
-        case "clinic": // Health station
-          helper("rbox", [0, 0.35, 0], [0, 0, 0], [0.75, 0.65, 0.65], cream);
-          helper("hip", [0, 0.82, 0], [0, 0, 0], [0.95, 0.35, 0.85], teal);
-          helper("box", [0, 0.4, 0.34], [0, 0, 0], [0.26, 0.08, 0.04], coral);
-          helper("box", [0, 0.4, 0.34], [0, 0, 0], [0.08, 0.26, 0.04], coral);
-          break;
-        case "dining": // Dining table with cute clay food bowls
-          helper("cylinder", [0, 0.2, 0], [0, 0, 0], [0.65, 0.35, 0.65], wood);
-          helper("sphere", [-0.15, 0.42, -0.1], [0, 0, 0], [0.15, 0.1, 0.15], coral);
-          helper("sphere", [0.15, 0.42, 0.1], [0, 0, 0], [0.15, 0.1, 0.15], yellow);
-          helper("cylinder", [-0.4, 0.12, 0], [0, 0, 0], [0.2, 0.22, 0.2], stone);
-          helper("cylinder", [0.4, 0.12, 0], [0, 0, 0], [0.2, 0.22, 0.2], stone);
-          break;
-        case "heart": // Big giant warm heart sculpture
-          helper("cylinder", [0, 0.15, 0], [0, 0, 0], [0.55, 0.25, 0.55], stone);
-          helper("sphere", [-0.16, 0.55, 0], [0, 0, 0.4], [0.35, 0.35, 0.28], coral);
-          helper("sphere", [0.16, 0.55, 0], [0, 0, -0.4], [0.35, 0.35, 0.28], coral);
-          helper("cone", [0, 0.38, 0], [Math.PI, 0, 0], [0.45, 0.45, 0.28], coral);
-          break;
-        case "camera": // Cloud CCTV tower
-          helper("cylinder", [0, 0.5, 0], [0, 0, 0], [0.09, 1.0, 0.09], stone);
-          helper("box", [0, 0.95, 0.12], [0.3, 0, 0], [0.15, 0.15, 0.3], cream);
-          helper("glowsphere", [0, 0.92, 0.26], [0, 0, 0], [0.08, 0.08, 0.08], teal);
-          break;
-        case "speaker": // Smart megaphone broadcaster
-          helper("cylinder", [0, 0.45, 0], [0, 0, 0], [0.08, 0.9, 0.08], stone);
-          helper("cone", [0, 0.88, 0], [0, 0, -Math.PI/2], [0.3, 0.4, 0.3], yellow);
-          helper("sphere", [-0.15, 0.88, 0], [0, 0, 0], [0.12, 0.12, 0.12], coral);
-          break;
-        case "sweeper": // Tool station
-          helper("box", [0, 0.25, 0], [0, 0, 0], [0.65, 0.45, 0.45], teal);
-          helper("cylinder", [0.15, 0.6, 0], [0.2, 0, 0], [0.04, 0.7, 0.04], wood);
-          helper("cone", [0.22, 0.9, 0], [0, 0, 0], [0.2, 0.3, 0.1], yellow);
-          break;
-        default:
-          helper("rbox", [0, 0.3, 0], [0, 0, 0], [0.6, 0.6, 0.6], stone);
+        const mixed = new THREE.Color();
+        if (h < 0.2) mixed.copy(colShore);
+        else if (h < 4) mixed.lerpColors(colMountainLow, colMountainHigh, h / 4);
+        else mixed.copy(colMountainHigh);
+        colors.push(mixed.r, mixed.g, mixed.b);
       }
+      basinGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      basinGeo.computeVertexNormals();
+
+      const basinMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0.02 });
+      const basinMesh = new THREE.Mesh(basinGeo, basinMat);
+      basinMesh.receiveShadow = true;
+      scene.add(basinMesh);
+
+      const waterGeo = new THREE.CircleGeometry(52, 64);
+      waterGeo.rotateX(-Math.PI / 2);
+      const waterMat = new THREE.MeshStandardMaterial({
+        color: 0x9bc7c5,
+        roughness: 0.25,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.88
+      });
+      const water = new THREE.Mesh(waterGeo, waterMat);
+      water.position.y = WATER_Y;
+      water.receiveShadow = true;
+      scene.add(water);
     }
 
-    // Street decor: lanterns & trees around hex perimeter
-    function buildIslandStreetDecor(center, islandId, decorSeed) {
-      const pr = mulberry32(decorSeed);
-      for (let i = 0; i < 6; i++) {
-        const ang = Math.PI / 6 + i * (Math.PI / 3);
-        const lx = center.x + Math.cos(ang) * (R - 0.22);
-        const lz = center.z + Math.sin(ang) * (R - 0.22);
+    // ── 建立 10 個政策島嶼 ──
+    const waypointsGraph = [];
+    function buildIslands() {
+      const hexShapeGeo = new THREE.CircleGeometry(R - 0.04, 6);
+      hexShapeGeo.rotateZ(Math.PI / 6);
+      hexShapeGeo.rotateX(-Math.PI / 2);
 
-        // Street Lantern
-        const mtx = new THREE.Matrix4().setPosition(lx, TOP, lz);
-        addPart("cylinder", mtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.35, 0).scale(new THREE.Vector3(0.06, 0.7, 0.06))), 0x5a514d, null, islandId);
-        addPart("glowsphere", mtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.72, 0).scale(new THREE.Vector3(0.18, 0.18, 0.18))), 0xffc777, null, islandId);
+      DATA.islands.forEach((isle) => {
+        const { x, z } = hexToWorld(isle.coord.q, isle.coord.r);
+        isle.worldPos = { x, y: TOP, z };
 
-        // Edge Tree / Planter
-        if (pr() > 0.3) {
-          const eAng = ang + Math.PI / 6;
-          const tx = center.x + Math.cos(eAng) * (R - 0.35);
-          const tz = center.z + Math.sin(eAng) * (R - 0.35);
-          const tMtx = new THREE.Matrix4().setPosition(tx, TOP, tz);
-          const treeCol = [0x789868, 0xe295aa, 0x82b472, 0x668660][Math.floor(pr() * 4)];
-          addPart("cylinder", tMtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.15, 0).scale(new THREE.Vector3(0.08, 0.3, 0.08))), 0x9b7252, null, islandId);
-          addPart("ico", tMtx.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.45 + pr() * 0.15, 0).scale(new THREE.Vector3(0.45, 0.55, 0.45))), treeCol, null, islandId);
+        const isleGroup = new THREE.Group();
+        isleGroup.position.set(x, 0, z);
+
+        const tex = createGroundCanvasTexture(isle.groundType);
+        tex.repeat.set(1.6, 1.6);
+        const topMat = new THREE.MeshStandardMaterial({
+          map: tex, roughness: 0.92,
+          polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1
+        });
+        const topMesh = new THREE.Mesh(hexShapeGeo, topMat);
+        topMesh.position.y = TOP;
+        topMesh.receiveShadow = true;
+        topMesh.userData = { type: 'island', raw: isle };
+        isleGroup.add(topMesh);
+        interactiveObjects.push(topMesh);
+        islandMeshMap.set(isle.id, isleGroup);
+
+        const sideGeo = new THREE.CylinderGeometry(R - 0.04, R - 0.04, TOP - WATER_Y, 6);
+        sideGeo.rotateY(Math.PI / 6);
+        const sideMat = new THREE.MeshStandardMaterial({ color: 0xb9a691, roughness: 0.96 });
+        const sideMesh = new THREE.Mesh(sideGeo, sideMat);
+        sideMesh.position.y = (TOP + WATER_Y) / 2;
+        sideMesh.receiveShadow = true;
+        isleGroup.add(sideMesh);
+
+        const pathGeo = new THREE.RingGeometry(1.62, 1.84, 6);
+        pathGeo.rotateZ(Math.PI / 6);
+        pathGeo.rotateX(-Math.PI / 2);
+        const pathMat = new THREE.MeshStandardMaterial({ color: 0xdec6b0, roughness: 0.9 });
+        const pathMesh = new THREE.Mesh(pathGeo, pathMat);
+        pathMesh.position.y = TOP + 0.005;
+        pathMesh.receiveShadow = true;
+        isleGroup.add(pathMesh);
+
+        const foamGeo = new THREE.RingGeometry(R + 0.02, R + 0.22, 6);
+        foamGeo.rotateZ(Math.PI / 6);
+        foamGeo.rotateX(-Math.PI / 2);
+        const foamMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45 });
+        const foamMesh = new THREE.Mesh(foamGeo, foamMat);
+        foamMesh.position.y = WATER_Y + 0.01;
+        isleGroup.add(foamMesh);
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'css2d-label';
+        labelDiv.textContent = isle.name;
+        labelDiv.onclick = (e) => { e.stopPropagation(); focusTarget(x, TOP, z, 'island', isle); };
+        const labelObj = new CSS2DObject(labelDiv);
+        labelObj.position.set(0, TOP + 1.25, 0);
+        isleGroup.add(labelObj);
+
+        scene.add(isleGroup);
+
+        const nodeIndices = [];
+        for (let i = 0; i < 6; i++) {
+          const a1 = (i * 60) * Math.PI / 180;
+          const a2 = ((i + 1) * 60) * Math.PI / 180;
+          const vx = x + Math.cos(a1) * 1.72;
+          const vz = z + Math.sin(a1) * 1.72;
+          const vIdx = waypointsGraph.length;
+          waypointsGraph.push({ x: vx, y: TOP + 0.02, z: vz, neighbors: [], isleId: isle.id });
+          nodeIndices.push(vIdx);
+
+          const mx = x + Math.cos((a1 + a2) / 2) * 1.58;
+          const mz = z + Math.sin((a1 + a2) / 2) * 1.58;
+          const mIdx = waypointsGraph.length;
+          waypointsGraph.push({ x: mx, y: TOP + 0.02, z: mz, neighbors: [], isleId: isle.id, isEdgeMid: true });
+          nodeIndices.push(mIdx);
+        }
+        for (let i = 0; i < nodeIndices.length; i++) {
+          const curr = nodeIndices[i];
+          const next = nodeIndices[(i + 1) % nodeIndices.length];
+          waypointsGraph[curr].neighbors.push(next);
+          waypointsGraph[next].neighbors.push(curr);
+        }
+
+        layoutIslandItems(isle, x, z);
+      });
+
+      buildBridges();
+    }
+
+    // ── 拱橋與路網相連 ──
+    function buildBridges() {
+      const islands = DATA.islands;
+      for (let i = 0; i < islands.length; i++) {
+        for (let j = i + 1; j < islands.length; j++) {
+          const a = islands[i];
+          const b = islands[j];
+          const dq = Math.abs(a.coord.q - b.coord.q);
+          const dr = Math.abs(a.coord.r - b.coord.r);
+          const ds = Math.abs((-a.coord.q - a.coord.r) - (-b.coord.q - b.coord.r));
+          if (Math.max(dq, dr, ds) === 1) {
+            const p1 = a.worldPos;
+            const p2 = b.worldPos;
+            const midX = (p1.x + p2.x) / 2;
+            const midZ = (p1.z + p2.z) / 2;
+            const angle = Math.atan2(p2.z - p1.z, p2.x - p1.x);
+
+            for (let k = 0; k < 9; k++) {
+              const distStep = (k - 4) * 0.18;
+              const bx = midX + Math.cos(angle) * distStep;
+              const bz = midZ + Math.sin(angle) * distStep;
+              const archY = TOP + 0.02 + Math.sin((k + 0.5) / 9 * Math.PI) * 0.1;
+              const mtx = new THREE.Matrix4();
+              mtx.makeRotationY(-angle + Math.PI / 2);
+              mtx.setPosition(bx, archY, bz);
+              pushPart('box', mtx, 0xbda289);
+            }
+
+            connectNearestWaypoints(a.id, b.id);
+          }
         }
       }
     }
 
-    // Assemble entire Kit into InstancedMesh draw calls
-    function compileBuildingKit() {
-      const groups = {};
-      buildingKitEntries.forEach(entry => {
-        if (!groups[entry.kind]) groups[entry.kind] = [];
-        groups[entry.kind].push(entry);
+    function connectNearestWaypoints(isleIdA, isleIdB) {
+      let minDist = 999;
+      let pair = null;
+      for (let i = 0; i < waypointsGraph.length; i++) {
+        if (waypointsGraph[i].isleId !== isleIdA || !waypointsGraph[i].isEdgeMid) continue;
+        for (let j = 0; j < waypointsGraph.length; j++) {
+          if (waypointsGraph[j].isleId !== isleIdB || !waypointsGraph[j].isEdgeMid) continue;
+          const d = Math.hypot(waypointsGraph[i].x - waypointsGraph[j].x, waypointsGraph[i].z - waypointsGraph[j].z);
+          if (d < minDist) {
+            minDist = d;
+            pair = [i, j];
+          }
+        }
+      }
+      if (pair) {
+        waypointsGraph[pair[0]].neighbors.push(pair[1]);
+        waypointsGraph[pair[1]].neighbors.push(pair[0]);
+      }
+    }
+
+    // ── 島內細項模型配置 ──
+    function layoutIslandItems(isle, cx, cz) {
+      const items = isle.items;
+      const slots = [
+        { x: 0, z: -0.55, scale: 1.0 },
+        { x: -0.68, z: 0.35, scale: 0.85 },
+        { x: 0.65, z: 0.38, scale: 0.85 }
+      ];
+
+      items.forEach((item, idx) => {
+        const slot = slots[idx % slots.length];
+        const wx = cx + slot.x;
+        const wz = cz + slot.z;
+        const scale = slot.scale;
+
+        assembleArchetype(item.model, wx, TOP, wz, scale);
+
+        const hitGeo = new THREE.BoxGeometry(0.75 * scale, 0.8 * scale, 0.75 * scale);
+        const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+        const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+        hitMesh.position.set(wx, TOP + 0.4 * scale, wz);
+        hitMesh.userData = { type: 'item', raw: item, parentIsland: isle };
+        scene.add(hitMesh);
+        interactiveObjects.push(hitMesh);
+        itemNodes.push({ id: item.id, mesh: hitMesh, worldPos: new THREE.Vector3(wx, TOP, wz), data: item });
+
+        const itemBadge = document.createElement('div');
+        itemBadge.className = 'css2d-label';
+        itemBadge.style.fontSize = '9.5px';
+        itemBadge.textContent = item.name.slice(0, 7);
+        itemBadge.onclick = (e) => { e.stopPropagation(); focusTarget(wx, TOP, wz, 'item', item, isle); };
+        const cssObj = new CSS2DObject(itemBadge);
+        cssObj.position.set(wx, TOP + 0.9 * scale, wz);
+        scene.add(cssObj);
       });
 
-      for (const kind in groups) {
-        const list = groups[kind];
-        const geo = sharedGeometries[kind];
-        const mat = (kind.startsWith("glow")) ? glowClayMaterial.clone() : solidClayMaterial.clone();
-        const instMesh = new THREE.InstancedMesh(geo, mat, list.length);
+      for (let i = 0; i < 6; i++) {
+        const ang = (i * 60) * Math.PI / 180;
+        const lx = cx + Math.cos(ang) * 1.82;
+        const lz = cz + Math.sin(ang) * 1.82;
+        pushPart('cylinder', new THREE.Matrix4().setPosition(lx, TOP + 0.2, lz), 0x5a5550);
+        pushPart('glowsphere', new THREE.Matrix4().setPosition(lx, TOP + 0.42, lz), 0xfce881);
+
+        if (rnd() > 0.3) {
+          const bx = cx + Math.cos(ang + 0.4) * 1.68;
+          const bz = cz + Math.sin(ang + 0.4) * 1.68;
+          pushPart('ico', new THREE.Matrix4().setPosition(bx, TOP + 0.08, bz), rnd() > 0.5 ? 0x829c73 : 0xdb7763);
+        }
+      }
+    }
+
+    // ── 模型 Archetypes 組裝 ──
+    function assembleArchetype(modelType, x, y, z, s) {
+      const pos = (dx, dy, dz) => new THREE.Matrix4().setPosition(x + dx * s, y + dy * s, z + dz * s);
+
+      switch (modelType) {
+        case 'indigenous_park':
+          pushPart('cylinder', pos(0, 0.08, 0), 0x937c68);
+          pushPart('cylinder', pos(-0.24, 0.28, 0), 0xd65338);
+          pushPart('cylinder', pos(-0.24, 0.48, 0), 0x3d3532);
+          pushPart('cylinder', pos(-0.24, 0.65, 0), 0xf5bf49);
+          pushPart('cone', pos(0.18, 0.52, 0), 0xbfa37a);
+          pushPart('cylinder', pos(0.18, 0.22, 0), 0x6e5a48);
+          break;
+
+        case 'community_center':
+          pushPart('rbox', pos(0, 0.22, 0), 0xfffcf7);
+          pushPart('hip', pos(0, 0.48, 0), 0xdb6a41);
+          pushPart('box', pos(0, 0.22, 0.28), 0x6d8b74);
+          pushPart('cylinder', pos(0.35, 0.08, 0.2), 0xb68d66);
+          pushPart('cylinder', pos(0.35, 0.04, 0.32), 0x7a634e);
+          break;
+
+        case 'canteen':
+          pushPart('cylinder', pos(-0.22, 0.2, -0.2), 0xdedede);
+          pushPart('cylinder', pos(0.22, 0.2, -0.2), 0xdedede);
+          pushPart('cylinder', pos(-0.22, 0.2, 0.2), 0xdedede);
+          pushPart('cylinder', pos(0.22, 0.2, 0.2), 0xdedede);
+          pushPart('box', pos(0, 0.42, 0), 0xf5ce5b);
+          pushPart('cylinder', pos(0, 0.12, 0), 0xcc4b37);
+          pushPart('box', pos(0, 0.06, 0.26), 0xa27e5a);
+          break;
+
+        case 'guard_post':
+          pushPart('rbox', pos(0, 0.25, 0), 0x48647a);
+          pushPart('hip', pos(0, 0.52, 0), 0x2e3d48);
+          pushPart('glowsphere', pos(0, 0.65, 0), 0xe63946);
+          pushPart('cylinder', pos(0.3, 0.18, 0.15), 0xfce881);
+          break;
+
+        case 'playground':
+          pushPart('rbox', pos(-0.16, 0.18, 0), 0x82a775);
+          const slideMtx = pos(0.12, 0.14, 0);
+          slideMtx.multiply(new THREE.Matrix4().makeRotationZ(-0.45));
+          pushPart('box', slideMtx, 0xf2994a);
+          pushPart('dome', pos(-0.16, 0.42, 0), 0x56ccf2);
+          break;
+
+        case 'health_station':
+          pushPart('rbox', pos(0, 0.22, 0), 0xffffff);
+          pushPart('hip', pos(0, 0.46, 0), 0x56a3a6);
+          pushPart('box', pos(0, 0.28, 0.26), 0xd9534f);
+          break;
+
+        case 'digital_screen':
+          pushPart('cylinder', pos(-0.18, 0.2, 0), 0x505050);
+          pushPart('cylinder', pos(0.18, 0.2, 0), 0x505050);
+          pushPart('box', pos(0, 0.42, 0), 0x222222);
+          pushPart('glowbox', pos(0, 0.42, 0.02), 0x76b4d4);
+          break;
+
+        case 'traffic_safety':
+          pushPart('box', pos(0, 0.03, 0), 0x5c5a58);
+          pushPart('cylinder', pos(0.24, 0.26, 0.15), 0xf5cf47);
+          pushPart('dome', pos(0.24, 0.52, 0.15), 0xff6b4a);
+          break;
+
+        case 'cleanup_station':
+          pushPart('rbox', pos(-0.12, 0.15, 0), 0x617b6a);
+          pushPart('rbox', pos(0.12, 0.12, 0), 0x7a634e);
+          const mtxStick = pos(0.25, 0.22, 0.1);
+          mtxStick.multiply(new THREE.Matrix4().makeRotationZ(0.3));
+          pushPart('cylinder', mtxStick, 0xd0ab7d);
+          break;
+
+        case 'flower_spot':
+        default:
+          pushPart('rbox', pos(0, 0.08, 0), 0xb48b64);
+          pushPart('sphere', pos(-0.1, 0.2, -0.08), 0xe76f51);
+          pushPart('sphere', pos(0.1, 0.22, 0.06), 0xf4a261);
+          pushPart('sphere', pos(0, 0.24, -0.02), 0x2a9d8f);
+          pushPart('ico', pos(0, 0.15, 0), 0x6e8f5e);
+          break;
+      }
+    }
+
+    // ── 批次繪製 (Instancing) ──
+    function compileAllInstances() {
+      const geoPool = {
+        box: new THREE.BoxGeometry(0.32, 0.32, 0.32),
+        rbox: new RoundedBoxGeometry(0.5, 0.4, 0.4, 3, 0.04),
+        cylinder: new THREE.CylinderGeometry(0.04, 0.04, 0.4, 12),
+        cone: new THREE.ConeGeometry(0.38, 0.35, 12),
+        sphere: new THREE.SphereGeometry(0.12, 12, 12),
+        ico: new THREE.IcosahedronGeometry(0.18, 1),
+        dome: new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+        hip: new THREE.ConeGeometry(0.38, 0.24, 4),
+        glowbox: new THREE.BoxGeometry(0.42, 0.22, 0.02),
+        glowsphere: new THREE.SphereGeometry(0.09, 12, 10)
+      };
+      geoPool.hip.rotateY(Math.PI / 4);
+
+      const standardMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.05 });
+      const glowMat = new THREE.MeshBasicMaterial();
+
+      Object.entries(instanceRegistry).forEach(([kind, items]) => {
+        const geo = geoPool[kind] || geoPool.box;
+        const mat = kind.startsWith('glow') ? glowMat : standardMat;
+        const instMesh = new THREE.InstancedMesh(geo, mat, items.length);
         instMesh.castShadow = true;
         instMesh.receiveShadow = true;
 
-        for (let i = 0; i < list.length; i++) {
-          instMesh.setMatrixAt(i, list[i].matrix);
-          instMesh.setColorAt(i, list[i].color);
-          list[i].instIndex = i;
-          list[i].ownerMesh = instMesh;
-        }
+        items.forEach((item, idx) => {
+          instMesh.setMatrixAt(idx, item.matrix);
+          instMesh.setColorAt(idx, item.color);
+        });
         instMesh.instanceMatrix.needsUpdate = true;
         if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
         scene.add(instMesh);
-        instancedMeshGroups[kind] = { mesh: instMesh, list: list };
-      }
+      });
     }
 
-    /* =========================================================
-       5. HEX ISLANDS, BRIDGES & PATHFINDING NETWORK
-    ========================================================= */
-    const islandCenters = {}; // islandId -> Vector3
-    const pathNodes = [];    // { id, pos: Vector3, neighbors: [nodeId] }
-    const islandNodeMap = {}; // islandId -> [nodeIds]
+    // ── 背景樹 ──
+    function buildBackgroundFoliage() {
+      const treeCount = 180;
+      const coneTr = new THREE.ConeGeometry(0.4, 0.7, 5);
+      const pineGeo = BufferGeometryUtils.mergeGeometries([
+        coneTr.clone().translate(0, 0.8, 0),
+        coneTr.clone().scale(0.8, 0.8, 0.8).translate(0, 1.2, 0),
+        coneTr.clone().scale(0.6, 0.6, 0.6).translate(0, 1.5, 0)
+      ]);
+      const trunkGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.5, 5).translate(0, 0.25, 0);
+      const singlePine = BufferGeometryUtils.mergeGeometries([pineGeo, trunkGeo]);
 
-    function buildIslandsAndBridges() {
-      DATA.islands.forEach((isl, idx) => {
-        const center = axialToWorld(isl.q, isl.r);
-        islandCenters[isl.id] = center;
+      const pineMesh = new THREE.InstancedMesh(singlePine, new THREE.MeshStandardMaterial({ color: 0x50694e, roughness: 0.95 }), treeCount);
+      pineMesh.castShadow = true; pineMesh.receiveShadow = true;
 
-        // Island Hex Top Base
-        const hexGeo = new THREE.CircleGeometry(R - 0.05, 6);
-        hexGeo.rotateZ(Math.PI / 6);
-        hexGeo.rotateX(-Math.PI / 2);
-
-        const tex = groundTextures[isl.groundType] || groundTextures.brick;
-        const hexMat = new THREE.MeshStandardMaterial({
-          map: tex,
-          roughness: 0.92,
-          polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1
-        });
-        const hexMesh = new THREE.Mesh(hexGeo, hexMat);
-        hexMesh.position.copy(center);
-        hexMesh.receiveShadow = true;
-        hexMesh.userData = { isIsland: true, islandId: isl.id };
-        scene.add(hexMesh);
-
-        // Island Walkway Border Ring
-        const ringGeo = new THREE.RingGeometry(R - 0.32, R - 0.04, 6);
-        ringGeo.rotateZ(Math.PI / 6);
-        ringGeo.rotateX(-Math.PI / 2);
-        const ringMat = new THREE.MeshStandardMaterial({ color: 0xe4d6c3, roughness: 0.88 });
-        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-        ringMesh.position.set(center.x, center.y + 0.002, center.z);
-        ringMesh.receiveShadow = true;
-        scene.add(ringMesh);
-
-        // Outer Water Foam Ring
-        const foamGeo = new THREE.RingGeometry(R + 0.05, R + 0.22, 6);
-        foamGeo.rotateZ(Math.PI / 6);
-        foamGeo.rotateX(-Math.PI / 2);
-        const foamMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
-        const foamMesh = new THREE.Mesh(foamGeo, foamMat);
-        foamMesh.position.set(center.x, WATER_Y + 0.01, center.z);
-        scene.add(foamMesh);
-
-        // Island Side Cliff (clay cylinder downward to water)
-        const cliffGeo = new THREE.CylinderGeometry(R - 0.06, R - 0.08, TOP - WATER_Y, 6);
-        cliffGeo.rotateY(Math.PI / 6);
-        const cliffMat = new THREE.MeshStandardMaterial({ color: 0xb59e89, roughness: 0.95 });
-        const cliffMesh = new THREE.Mesh(cliffGeo, cliffMat);
-        cliffMesh.position.set(center.x, (TOP + WATER_Y) / 2, center.z);
-        cliffMesh.receiveShadow = true;
-        scene.add(cliffMesh);
-
-        // Street decor & items layout
-        buildIslandStreetDecor(center, isl.id, 100 + idx);
-
-        // Layout items on the hex island
-        // Main building archetype placed at (0, -0.58)
-        const mtxMain = new THREE.Matrix4().setPosition(center.x, TOP, center.z - 0.58).scale(new THREE.Vector3(1.15, 1.15, 1.15));
-        const mainItem = isl.items[0];
-        buildModelArchetype(mainItem.model, mtxMain, mainItem.id, isl.id);
-
-        // Remaining sub-items in staggered spots within inradius 1.36
-        const subItems = isl.items.slice(1);
-        const itemSpacing = subItems.length > 3 ? 0.46 : 0.58;
-        subItems.forEach((sub, sIdx) => {
-          const row = Math.floor(sIdx / 2);
-          const col = sIdx % 2;
-          const ox = (col - 0.5) * (itemSpacing * 1.55);
-          const oz = 0.25 + row * (itemSpacing * 1.15);
-          const sMtx = new THREE.Matrix4().setPosition(center.x + ox, TOP, center.z + oz).scale(new THREE.Vector3(0.78, 0.78, 0.78));
-          buildModelArchetype(sub.model, sMtx, sub.id, isl.id);
-        });
-
-        // 12 Pedestrian Path Nodes (6 corners + 6 edge centers)
-        const islandNodes = [];
-        for (let i = 0; i < 6; i++) {
-          const cornerAng = Math.PI / 6 + i * (Math.PI / 3);
-          const midAng = cornerAng + Math.PI / 6;
-          const cp = new THREE.Vector3(center.x + Math.cos(cornerAng) * (R - 0.18), TOP + 0.02, center.z + Math.sin(cornerAng) * (R - 0.18));
-          const mp = new THREE.Vector3(center.x + Math.cos(midAng) * (R - 0.24), TOP + 0.02, center.z + Math.sin(midAng) * (R - 0.24));
-
-          const cId = `${isl.id}_c_${i}`;
-          const mId = `${isl.id}_m_${i}`;
-          pathNodes.push({ id: cId, pos: cp, neighbors: [] });
-          pathNodes.push({ id: mId, pos: mp, neighbors: [] });
-          islandNodes.push(cId, mId);
+      const dummy = new THREE.Object3D();
+      let placed = 0;
+      for (let i = 0; i < treeCount * 3 && placed < treeCount; i++) {
+        const dist = 18 + rnd() * 32;
+        const theta = rnd() * Math.PI * 2;
+        const tx = Math.cos(theta) * dist;
+        const tz = Math.sin(theta) * dist;
+        const ty = noise2D(tx * 0.035, tz * 0.035) * 4.5 + THREE.MathUtils.smoothstep(dist, 18, 55) * 6.5 - 0.2;
+        if (ty > 0.8) {
+          dummy.position.set(tx, ty, tz);
+          const sc = 0.8 + rnd() * 0.6;
+          dummy.scale.set(sc, sc, sc);
+          dummy.rotation.y = rnd() * Math.PI;
+          dummy.updateMatrix();
+          pineMesh.setMatrixAt(placed, dummy.matrix);
+          placed++;
         }
+      }
+      pineMesh.instanceMatrix.needsUpdate = true;
+      scene.add(pineMesh);
+    }
 
-        // Connect path ring
-        for (let i = 0; i < 12; i++) {
-          const n1 = islandNodes[i];
-          const n2 = islandNodes[(i + 1) % 12];
-          getNode(n1).neighbors.push(n2);
-          getNode(n2).neighbors.push(n1);
+    // ── Chibi 小人與協作路徑 ──
+    let walkers = [];
+    let collabLines = [];
+
+    function setupWalkersAndCollaborations() {
+      DATA.collaborations.forEach((collab, idx) => {
+        const fromIsle = DATA.islands.find(is => is.id === collab.from);
+        const toIsle = DATA.islands.find(is => is.id === collab.to);
+        if (!fromIsle || !toIsle) return;
+
+        const walker = new THREE.Group();
+        const bodyGeo = new THREE.CylinderGeometry(0.09, 0.08, 0.18, 8);
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color: collab.courier.includes('李昭靜') ? 0xdb6a41 : (collab.courier.includes('原民') ? 0xd9534f : 0x48647a),
+          roughness: 0.8
+        });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.12;
+        walker.add(body);
+
+        const headGeo = new THREE.SphereGeometry(0.12, 12, 10);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.7 });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 0.28;
+        walker.add(head);
+
+        const cargoGeo = new THREE.BoxGeometry(0.12, 0.1, 0.12);
+        const cargoMat = new THREE.MeshStandardMaterial({ color: 0xf5ce5b });
+        const cargo = new THREE.Mesh(cargoGeo, cargoMat);
+        cargo.position.set(0, 0.16, 0.12);
+        walker.add(cargo);
+
+        const startNodes = waypointsGraph.map((n, i) => ({ n, i })).filter(o => o.n.isleId === fromIsle.id);
+        const endNodes = waypointsGraph.map((n, i) => ({ n, i })).filter(o => o.n.isleId === toIsle.id);
+
+        const startIndex = startNodes[Math.floor(rnd() * startNodes.length)].i;
+        const endIndex = endNodes[Math.floor(rnd() * endNodes.length)].i;
+        const pathIndices = dijkstraPath(startIndex, endIndex);
+
+        walker.position.set(waypointsGraph[startIndex].x, TOP, waypointsGraph[startIndex].z);
+        scene.add(walker);
+
+        walkers.push({
+          mesh: walker,
+          path: pathIndices.map(pi => waypointsGraph[pi]),
+          currentSegment: 0,
+          progress: rnd(),
+          speed: 0.0035 + rnd() * 0.002,
+          forward: true,
+          collabData: collab
+        });
+
+        const pA = fromIsle.worldPos;
+        const pB = toIsle.worldPos;
+        const midX = (pA.x + pB.x) / 2;
+        const midZ = (pA.z + pB.z) / 2;
+        const curve = new THREE.QuadraticBezierCurve3(
+          new THREE.Vector3(pA.x, TOP + 0.2, pA.z),
+          new THREE.Vector3(midX, TOP + 1.8 + idx * 0.2, midZ),
+          new THREE.Vector3(pB.x, TOP + 0.2, pB.z)
+        );
+
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(36));
+        const lineMat = new THREE.LineDashedMaterial({
+          color: collab.level === 'official' ? 0xdb6a41 : (collab.level === 'thematic' ? 0x56a3a6 : 0xbbbbbb),
+          dashSize: 0.3, gapSize: 0.15, lineWidth: 2
+        });
+        const lineMesh = new THREE.Line(lineGeo, lineMat);
+        lineMesh.computeLineDistances();
+        scene.add(lineMesh);
+        collabLines.push(lineMesh);
+      });
+    }
+
+    // ── Dijkstra 最短路徑 ──
+    function dijkstraPath(startIdx, targetIdx) {
+      const dists = new Array(waypointsGraph.length).fill(Infinity);
+      const prev = new Array(waypointsGraph.length).fill(null);
+      const visited = new Set();
+      dists[startIdx] = 0;
+
+      for (let count = 0; count < waypointsGraph.length; count++) {
+        let u = -1;
+        let minD = Infinity;
+        for (let i = 0; i < waypointsGraph.length; i++) {
+          if (!visited.has(i) && dists[i] < minD) {
+            minD = dists[i];
+            u = i;
+          }
         }
-        islandNodeMap[isl.id] = islandNodes;
+        if (u === -1 || u === targetIdx) break;
+        visited.add(u);
 
-        // CSS2D Island Name Badge
-        const badgeDiv = document.createElement('div');
-        badgeDiv.className = 'css2d-island-pill';
-        badgeDiv.innerText = `${(idx + 1).toString().padStart(2, '0')} ${isl.name}`;
-        badgeDiv.dataset.islandId = isl.id;
-        badgeDiv.addEventListener('click', (e) => {
-          e.stopPropagation();
-          selectIsland(isl.id);
-        });
-        const badgeLabel = new CSS2DObject(badgeDiv);
-        badgeLabel.position.set(center.x, TOP + 0.35, center.z + R - 0.1);
-        scene.add(badgeLabel);
-      });
-
-      // Build arched bridges between neighboring islands
-      const builtBridges = new Set();
-      DATA.islands.forEach(islA => {
-        DATA.islands.forEach(islB => {
-          if (islA.id === islB.id) return;
-          const key = [islA.id, islB.id].sort().join('--');
-          if (builtBridges.has(key)) return;
-
-          const pA = islandCenters[islA.id];
-          const pB = islandCenters[islB.id];
-          const dist = pA.distanceTo(pB);
-
-          // Neighbors in hex grid have distance approx SPACING * sqrt(3) ~ 3.95
-          if (dist > 0.5 && dist < SPACING * 1.8) {
-            builtBridges.add(key);
-            createArchedBridge(islA.id, islB.id, pA, pB);
+        for (const v of waypointsGraph[u].neighbors) {
+          if (visited.has(v)) continue;
+          const w = Math.hypot(waypointsGraph[u].x - waypointsGraph[v].x, waypointsGraph[u].z - waypointsGraph[v].z);
+          if (dists[u] + w < dists[v]) {
+            dists[v] = dists[u] + w;
+            prev[v] = u;
           }
-        });
-      });
-    }
-
-    function getNode(id) {
-      return pathNodes.find(n => n.id === id);
-    }
-
-    // Build Cute 9-plank arched bridge
-    function createArchedBridge(idA, idB, posA, posB) {
-      const mid = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
-      const dir = new THREE.Vector3().subVectors(posB, posA).normalize();
-      const length = posA.distanceTo(posB) - (R * 1.5);
-      const span = Math.max(1.1, length);
-
-      // Find closest edge mid nodes on both islands to link graphs
-      let bestA = null, minDistA = 999;
-      islandNodeMap[idA].forEach(nId => {
-        const d = getNode(nId).pos.distanceTo(mid);
-        if (d < minDistA) { minDistA = d; bestA = nId; }
-      });
-      let bestB = null, minDistB = 999;
-      islandNodeMap[idB].forEach(nId => {
-        const d = getNode(nId).pos.distanceTo(mid);
-        if (d < minDistB) { minDistB = d; bestB = nId; }
-      });
-
-      if (bestA && bestB) {
-        getNode(bestA).neighbors.push(bestB);
-        getNode(bestB).neighbors.push(bestA);
-      }
-
-      // Generate 9 curved wooden planks
-      const bridgeGroup = new THREE.Group();
-      const woodMat = new THREE.MeshStandardMaterial({ color: 0xb48560, roughness: 0.82 });
-      const railMat = new THREE.MeshStandardMaterial({ color: 0xdb6a41, roughness: 0.7 });
-
-      const planksCount = 9;
-      const ang = Math.atan2(dir.z, dir.x);
-
-      for (let i = 0; i < planksCount; i++) {
-        const t = (i / (planksCount - 1)) - 0.5;
-        const plankDist = t * span;
-        const archY = TOP + Math.sin((i / (planksCount - 1)) * Math.PI) * 0.12 - 0.02;
-
-        const plankGeo = new THREE.BoxGeometry(span / planksCount * 0.88, 0.05, 0.5);
-        const plank = new THREE.Mesh(plankGeo, woodMat);
-        plank.position.set(mid.x + dir.x * plankDist, archY, mid.z + dir.z * plankDist);
-        plank.rotation.y = -ang;
-        plank.castShadow = true;
-        plank.receiveShadow = true;
-        bridgeGroup.add(plank);
-      }
-      scene.add(bridgeGroup);
-    }
-
-    // Dijkstra Pathfinding between waypoint nodes
-    function dijkstra(startId, endId) {
-      const distances = {};
-      const prev = {};
-      const unvisited = new Set();
-
-      pathNodes.forEach(node => {
-        distances[node.id] = Infinity;
-        unvisited.add(node.id);
-      });
-      distances[startId] = 0;
-
-      while (unvisited.size > 0) {
-        let curr = null, minDist = Infinity;
-        unvisited.forEach(nodeId => {
-          if (distances[nodeId] < minDist) {
-            minDist = distances[nodeId];
-            curr = nodeId;
-          }
-        });
-
-        if (!curr || distances[curr] === Infinity) break;
-        if (curr === endId) break;
-        unvisited.delete(curr);
-
-        const currNode = getNode(curr);
-        currNode.neighbors.forEach(nbrId => {
-          if (!unvisited.has(nbrId)) return;
-          const alt = distances[curr] + currNode.pos.distanceTo(getNode(nbrId).pos);
-          if (alt < distances[nbrId]) {
-            distances[nbrId] = alt;
-            prev[nbrId] = curr;
-          }
-        });
+        }
       }
 
       const path = [];
-      let u = endId;
-      while (prev[u]) {
-        path.unshift(u);
-        u = prev[u];
+      let curr = targetIdx;
+      while (curr !== null) {
+        path.unshift(curr);
+        curr = prev[curr];
       }
-      if (u === startId) path.unshift(startId);
-      return path.map(id => getNode(id).pos.clone());
+      return path.length > 1 ? path : [startIdx, targetIdx];
     }
 
-    /* =========================================================
-       6. CHARACTERS (WALKERS), FLOW LINES & LOGS
-    ========================================================= */
-    const walkers = [];
-    let flowLines = [];
+    // ── 相機飛行控制 ──
+    let isTransitioning = false;
+    let flightStart = 0;
+    const flightDuration = 800;
+    let camStartPos = new THREE.Vector3();
+    let camEndPos = new THREE.Vector3();
+    let tgtStartPos = new THREE.Vector3();
+    let tgtEndPos = new THREE.Vector3();
 
-    // Chibi Walker Instanced Meshes
-    let walkerMeshParts = {};
-
-    function initWalkerKit() {
-      const walkerCap = 100;
-      walkerMeshParts.heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 12, 10), solidClayMaterial, walkerCap);
-      walkerMeshParts.bodies = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.08, 0.16, 10), solidClayMaterial, walkerCap);
-      walkerMeshParts.legs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.025, 0.025, 0.12, 8), solidClayMaterial, walkerCap * 2);
-
-      for (const k in walkerMeshParts) {
-        walkerMeshParts[k].instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        scene.add(walkerMeshParts[k]);
-      }
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    // Build Tube collaboration flow lines
-    function initCollaborationFlows() {
-      DATA.collaborations.forEach(collab => {
-        const startNodes = islandNodeMap[collab.from];
-        const endNodes = islandNodeMap[collab.to];
-        if (!startNodes || !endNodes) return;
+    function flyTo(targetVector, offsetVector) {
+      camStartPos.copy(camera.position);
+      camEndPos.copy(targetVector).add(offsetVector);
+      tgtStartPos.copy(controls.target);
+      tgtEndPos.copy(targetVector);
 
-        const pathPoints = dijkstra(startNodes[0], endNodes[0]);
-        if (pathPoints.length < 2) return;
+      flightStart = performance.now();
+      isTransitioning = true;
+    }
 
-        // Smooth curve
-        const curve = new THREE.CatmullRomCurve3(pathPoints);
-        const tubeGeo = new THREE.TubeGeometry(curve, Math.max(20, pathPoints.length * 8), 0.038, 8, false);
+    function focusTarget(x, y, z, type, data, parentIsle = null) {
+      const isMobile = window.innerWidth <= 900;
+      const xOffset = isMobile ? 0 : -1.2;
+      const targetVec = new THREE.Vector3(x + xOffset, y, z);
+      const camOffset = type === 'island' ? new THREE.Vector3(2.7, 5.2, 6.0) : new THREE.Vector3(1.6, 2.5, 3.2);
 
-        // Custom Dash Flow Shader
-        const flowMat = new THREE.ShaderMaterial({
-          transparent: true,
-          uniforms: {
-            uTime: { value: 0 },
-            uColor: { value: new THREE.Color(0xdb6a41) },
-            uType: { value: collab.level === 'official' ? 1.0 : (collab.level === 'thematic' ? 2.0 : 3.0) }
-          },
-          vertexShader: `
-            varying vec2 vUv;
-            void main() {
-              vUv = uv;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `,
-          fragmentShader: `
-            uniform float uTime;
-            uniform vec3 uColor;
-            uniform float uType;
-            varying vec2 vUv;
-            void main() {
-              float u = vUv.x * 35.0 - uTime * 2.2;
-              float f = fract(u);
-              if (uType > 2.5) { // pending (dots)
-                if (f > 0.35) discard;
-              } else if (uType > 1.5) { // thematic (dash)
-                if (f > 0.6) discard;
-              }
-              gl_FragColor = vec4(uColor, 0.85);
-            }
-          `
+      flyTo(targetVec, camOffset);
+      showDetailCard(type, data, parentIsle);
+      addLogEntry(`🔍 里民正在查看【${data.name}】重點建設內容`);
+    }
+
+    // ── UI 與詳細卡片 ──
+    const detailCard = document.getElementById('detail-card');
+    const cardBadge = document.getElementById('card-badge');
+    const cardTimeline = document.getElementById('card-timeline');
+    const cardTitle = document.getElementById('card-title');
+    const cardDesc = document.getElementById('card-desc');
+    const cardFacts = document.getElementById('card-facts');
+
+    function showDetailCard(type, data, parentIsle) {
+      detailCard.style.display = 'flex';
+      cardFacts.innerHTML = '';
+
+      if (type === 'island') {
+        cardBadge.textContent = data.category;
+        cardTimeline.textContent = '十全十美核心願景';
+        cardTitle.textContent = data.name;
+        cardDesc.textContent = data.desc;
+        data.items.forEach(it => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${it.name}</strong><br><span style="font-size:11px;color:#7a6d65;">${it.desc}</span>`;
+          li.onclick = (e) => { e.stopPropagation(); focusTarget(it.worldPos ? it.worldPos.x : data.worldPos.x, TOP, it.worldPos ? it.worldPos.z : data.worldPos.z, 'item', it, data); };
+          li.style.cursor = 'pointer';
+          cardFacts.appendChild(li);
         });
-
-        const tubeMesh = new THREE.Mesh(tubeGeo, flowMat);
-        tubeMesh.userData = { isFlow: true, collab };
-        tubeMesh.visible = showFlows;
-        scene.add(tubeMesh);
-        flowLines.push({ mesh: tubeMesh, collab, curve, material: flowMat });
-
-        // Add 2-3 walkers for this flow
-        for (let i = 0; i < 2; i++) {
-          createWalkerOnCurve(curve, collab, i * 0.5);
+      } else {
+        cardBadge.textContent = parentIsle ? parentIsle.name : '里政細項';
+        cardTimeline.textContent = data.time || '即刻推動';
+        cardTitle.textContent = data.name;
+        cardDesc.textContent = data.desc;
+        if (data.facts) {
+          data.facts.forEach(f => {
+            const li = document.createElement('li');
+            li.textContent = f;
+            cardFacts.appendChild(li);
+          });
         }
-      });
-    }
-
-    function createWalkerOnCurve(curve, collab, startT) {
-      const roleColors = {
-        "送餐志工隊": 0xdb6a41,
-        "環保農耕隊": 0x71806a,
-        "巡守機動隊": 0x448292,
-        "防災急救員": 0xc0392b,
-        "彩虹課輔志工": 0xf1c40f,
-        "李昭靜與青年里幹事": 0xbe532c,
-        "毛孩志願者": 0x9b59b6
-      };
-
-      // HTML label badge above head
-      const bubble = document.createElement('div');
-      bubble.className = 'css2d-walker-bubble';
-      bubble.innerText = `${collab.role}：${collab.item}`;
-      const bubbleLabel = new CSS2DObject(bubble);
-
-      const walker = {
-        curve,
-        collab,
-        t: startT,
-        speed: 0.045 + rand() * 0.015,
-        forward: true,
-        pauseTimer: 0,
-        color: roleColors[collab.role] || 0x333333,
-        pos: new THREE.Vector3(),
-        bubbleLabel
-      };
-      scene.add(bubbleLabel);
-      walkers.push(walker);
-    }
-
-    function updateWalkers(dt) {
-      if (walkers.length === 0) return;
-      const dummy = new THREE.Object3D();
-
-      let legIdx = 0;
-      walkers.forEach((w, idx) => {
-        if (w.pauseTimer > 0) {
-          w.pauseTimer -= dt;
-          return;
-        }
-
-        const delta = (w.speed * dt);
-        w.t += w.forward ? delta : -delta;
-
-        if (w.t >= 1.0) {
-          w.t = 1.0; w.forward = false; w.pauseTimer = 1.4;
-          triggerLogEvent(`arrive`, `${w.collab.role} 抵達目標島，交接【${w.collab.item}】。`);
-        } else if (w.t <= 0.0) {
-          w.t = 0.0; w.forward = true; w.pauseTimer = 1.4;
-          triggerLogEvent(`depart`, `${w.collab.role} 從起點出發，搬運【${w.collab.item}】。`);
-        }
-
-        w.curve.getPoint(w.t, w.pos);
-        const tangent = w.curve.getTangent(w.t).multiplyScalar(w.forward ? 1 : -1);
-        const lookTarget = w.pos.clone().add(tangent);
-
-        // Animate chibi parts
-        const animTime = performance.now() * 0.009 + idx * 4.0;
-        const bob = Math.abs(Math.sin(animTime)) * 0.014;
-
-        // Head
-        dummy.position.set(w.pos.x, w.pos.y + 0.28 + bob, w.pos.z);
-        dummy.scale.set(1, 1, 1);
-        dummy.lookAt(lookTarget.x, dummy.position.y, lookTarget.z);
-        dummy.updateMatrix();
-        walkerMeshParts.heads.setMatrixAt(idx, dummy.matrix);
-        walkerMeshParts.heads.setColorAt(idx, new THREE.Color(0xffdbcb));
-
-        // Body
-        dummy.position.set(w.pos.x, w.pos.y + 0.16 + bob, w.pos.z);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        walkerMeshParts.bodies.setMatrixAt(idx, dummy.matrix);
-        walkerMeshParts.bodies.setColorAt(idx, new THREE.Color(w.color));
-
-        // Legs swinging
-        const legSwing = Math.sin(animTime) * 0.35;
-        dummy.position.set(w.pos.x - 0.03, w.pos.y + 0.06, w.pos.z);
-        dummy.rotation.x = legSwing;
-        dummy.updateMatrix();
-        walkerMeshParts.legs.setMatrixAt(legIdx++, dummy.matrix);
-
-        dummy.position.set(w.pos.x + 0.03, w.pos.y + 0.06, w.pos.z);
-        dummy.rotation.x = -legSwing;
-        dummy.updateMatrix();
-        walkerMeshParts.legs.setMatrixAt(legIdx++, dummy.matrix);
-
-        // Update CSS2D label position
-        w.bubbleLabel.position.set(w.pos.x, w.pos.y + 0.44, w.pos.z);
-        w.bubbleLabel.visible = showLabels && camera.position.distanceTo(w.pos) < 18;
-      });
-
-      walkerMeshParts.heads.instanceMatrix.needsUpdate = true;
-      walkerMeshParts.heads.instanceColor.needsUpdate = true;
-      walkerMeshParts.bodies.instanceMatrix.needsUpdate = true;
-      walkerMeshParts.bodies.instanceColor.needsUpdate = true;
-      walkerMeshParts.legs.instanceMatrix.needsUpdate = true;
-    }
-
-    function triggerLogEvent(type, text) {
-      const list = document.getElementById('log-list');
-      if (!list) return;
-      const el = document.createElement('div');
-      const timeStr = formatMinutesToClock(clockMinutes);
-      el.innerHTML = `<b>[${timeStr}]</b> ${text}`;
-      list.prepend(el);
-      while (list.children.length > 18) list.removeChild(list.lastChild);
-    }
-
-    /* =========================================================
-       7. BACKGROUND ENVIRONMENT, TERRAIN & DRIFTING CLOUDS
-    ========================================================= */
-    const clouds = [];
-
-    function initEnvironment() {
-      // 1. Sky Sphere with BackSide Gradient Shader
-      const skyGeo = new THREE.SphereGeometry(170, 32, 24);
-      const skyMat = new THREE.ShaderMaterial({
-        side: THREE.BackSide,
-        depthWrite: false,
-        fog: false,
-        uniforms: {
-          uTop: { value: new THREE.Color(0x9fd0ec) },
-          uHorizon: { value: new THREE.Color(0xf4eee3) },
-          uSunDir: { value: new THREE.Vector3(0, 1, 0) },
-          uNight: { value: 0.0 }
-        },
-        vertexShader: `
-          varying vec3 vWorldPos;
-          void main() {
-            vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-            gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPos, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 uTop;
-          uniform vec3 uHorizon;
-          uniform vec3 uSunDir;
-          uniform float uNight;
-          varying vec3 vWorldPos;
-
-          float hash(vec3 p) {
-            p = fract(p * 0.3183099 + .1);
-            p *= 17.0;
-            return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-          }
-
-          void main() {
-            vec3 dir = normalize(vWorldPos);
-            float h = smoothstep(-0.02, 0.55, dir.y);
-            vec3 col = mix(uHorizon, uTop, h);
-
-            // Sun glow halo
-            float sunDot = max(dot(dir, uSunDir), 0.0);
-            col += vec3(1.0, 0.85, 0.6) * pow(sunDot, 18.0) * 0.35;
-
-            // Night stars
-            if (uNight > 0.05) {
-              vec3 starP = floor(dir * 180.0);
-              if (hash(starP) > 0.9965 && dir.y > 0.1) {
-                col += vec3(0.9, 0.95, 1.0) * uNight * 0.8;
-              }
-            }
-            gl_FragColor = vec4(col, 1.0);
-          }
-        `
-      });
-      skyMesh = new THREE.Mesh(skyGeo, skyMat);
-      scene.add(skyMesh);
-
-      // 2. Animated Water Plane
-      const waterGeo = new THREE.CircleGeometry(160, 64);
-      waterGeo.rotateX(-Math.PI / 2);
-      const waterMat = new THREE.ShaderMaterial({
-        fog: true,
-        uniforms: {
-          uTime: { value: 0 },
-          uWaterColor: { value: new THREE.Color(0xa9d8db) },
-          fogColor: { value: new THREE.Color(0xf4eee3) },
-          fogNear: { value: 42 },
-          fogFar: { value: 150 }
-        },
-        vertexShader: `
-          varying vec3 vWorldPos;
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-            gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPos, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform float uTime;
-          uniform vec3 uWaterColor;
-          uniform vec3 fogColor;
-          uniform float fogNear;
-          uniform float fogFar;
-          varying vec3 vWorldPos;
-          varying vec2 vUv;
-
-          void main() {
-            float dist = length(vWorldPos.xz);
-            float wave = sin(vWorldPos.x * 0.4 + uTime * 1.2) * cos(vWorldPos.z * 0.4 + uTime * 0.9);
-            vec3 deep = uWaterColor * 0.76;
-            vec3 shallow = uWaterColor * 1.08;
-            vec3 col = mix(shallow, deep, clamp(dist / 65.0, 0.0, 1.0));
-            col += vec3(0.08) * wave;
-
-            // Simple fog computation
-            float depth = length(vWorldPos - cameraPosition);
-            float fogFactor = smoothstep(fogNear, fogFar, depth);
-            col = mix(col, fogColor, fogFactor);
-
-            gl_FragColor = vec4(col, 0.92);
-          }
-        `
-      });
-      waterMesh = new THREE.Mesh(waterGeo, waterMat);
-      waterMesh.position.y = WATER_Y;
-      scene.add(waterMesh);
-
-      // 3. Surrounding Basin Mountain Rim
-      const terrainGeo = new THREE.PlaneGeometry(170, 170, 90, 90);
-      terrainGeo.rotateX(-Math.PI / 2);
-      const posAttr = terrainGeo.attributes.position;
-      const count = posAttr.count;
-      const colors = new Float32Array(count * 3);
-
-      for (let i = 0; i < count; i++) {
-        const x = posAttr.getX(i);
-        const z = posAttr.getZ(i);
-        const d = Math.sqrt(x * x + z * z);
-        let y = -0.5;
-
-        // Rim elevation between r=25 and 65, squashed on camera side (z > 0)
-        if (d > 22.0) {
-          const rim = THREE.MathUtils.smoothstep(d, 22.0, 60.0);
-          const n = (noise.noise2D(x * 0.04, z * 0.04) + 0.5) * 6.5;
-          const terraced = Math.floor(n * 2.5) / 2.5;
-          const squash = (z > 0) ? Math.max(0.2, 1.0 - (z / 80.0)) : 1.0;
-          y += rim * (terraced + 1.5) * squash;
-        }
-        posAttr.setY(i, y);
-
-        // Height-based clay vertex colors:
-        let col = new THREE.Color(0xaec493); // meadow
-        if (y < 0.2) col.setHex(0xd9c9a3);  // sand
-        else if (y < 2.5) col.setHex(0x9cb986); // grass
-        else if (y < 5.0) col.setHex(0x6f8a62); // forest
-        else col.setHex(0xb2a38d); // clay rock
-
-        colors[i * 3] = col.r;
-        colors[i * 3 + 1] = col.g;
-        colors[i * 3 + 2] = col.b;
-      }
-      terrainGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      terrainGeo.computeVertexNormals();
-
-      const terrainMat = new THREE.MeshStandardMaterial({
-        vertexColors: true,
-        roughness: 0.95,
-        flatShading: true
-      });
-      terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
-      terrainMesh.position.y = WATER_Y - 0.1;
-      terrainMesh.receiveShadow = true;
-      scene.add(terrainMesh);
-
-      // 4. Instanced Background Trees on mountain rim
-      const bgTreeGeo = new THREE.ConeGeometry(0.6, 1.4, 4);
-      const bgTreeMat = new THREE.MeshStandardMaterial({ color: 0x5a784e, roughness: 0.9, flatShading: true });
-      const treeCount = 450;
-      const bgTrees = new THREE.InstancedMesh(bgTreeGeo, bgTreeMat, treeCount);
-      const dMtx = new THREE.Matrix4();
-
-      for (let i = 0; i < treeCount; i++) {
-        const ang = rand() * Math.PI * 2;
-        const dist = 28 + rand() * 38;
-        const tx = Math.cos(ang) * dist;
-        const tz = Math.sin(ang) * dist;
-        // Suppress tree on near-camera side
-        if (tz > 22 && dist < 42) continue;
-        const ty = 1.0 + (dist - 28) * 0.18 + (noise.noise2D(tx * 0.05, tz * 0.05) * 1.5);
-        const scl = 0.8 + rand() * 0.7;
-
-        dMtx.makeRotationY(rand() * Math.PI);
-        dMtx.setPosition(tx, ty, tz);
-        dMtx.scale(new THREE.Vector3(scl, scl, scl));
-        bgTrees.setMatrixAt(i, dMtx);
-      }
-      bgTrees.instanceMatrix.needsUpdate = true;
-      scene.add(bgTrees);
-
-      // 5. Drifting Puffy Clouds
-      const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
-      for (let i = 0; i < 10; i++) {
-        const cloudGroup = new THREE.Group();
-        const puffCount = 4 + Math.floor(rand() * 4);
-        for (let p = 0; p < puffCount; p++) {
-          const puff = new THREE.Mesh(new THREE.SphereGeometry(1.2 + rand() * 1.0, 8, 6), cloudMat);
-          puff.position.set((p - puffCount / 2) * 1.1, (rand() - 0.5) * 0.4, (rand() - 0.5) * 0.8);
-          cloudGroup.add(puff);
-        }
-        cloudGroup.position.set(-60 + rand() * 120, 16 + rand() * 12, -60 + rand() * 120);
-        scene.add(cloudGroup);
-        clouds.push({ group: cloudGroup, speed: 0.8 + rand() * 0.6 });
       }
     }
 
-    /* =========================================================
-       8. CAMERA FLIGHT & SELECTION LOGIC
-    ========================================================= */
-    let currentSelectedIsland = null;
-    let currentSelectedItem = null;
-    let cameraFlight = null; // { startPos, endPos, startTarget, endTarget, startTime, duration }
+    document.getElementById('btn-close-detail').onclick = () => {
+      detailCard.style.display = 'none';
+      resetToOverview();
+    };
 
-    function flyToTarget(pos, targetLook, duration = 800) {
-      if (isReducedMotion) {
-        camera.position.copy(pos);
-        controls.target.copy(targetLook);
-        controls.update();
+    function resetToOverview() {
+      const dist = window.innerWidth < 800 ? 46 : 30;
+      const norm = new THREE.Vector3(0.24, 0.33, 0.87).normalize();
+      flyTo(new THREE.Vector3(0, TOP, 0), norm.multiplyScalar(dist));
+    }
+
+    // ── 右側抽屜 ──
+    const drawerContainer = document.getElementById('drawer-items');
+    const tabPillars = document.getElementById('tab-pillars');
+    const tabCollab = document.getElementById('tab-collab');
+    let currentTab = 'pillars';
+
+    function renderDrawer(filter = '') {
+      drawerContainer.innerHTML = '';
+      if (currentTab === 'pillars') {
+        DATA.islands.forEach(isle => {
+          isle.items.forEach(item => {
+            if (filter && !item.name.includes(filter) && !item.desc.includes(filter) && !isle.name.includes(filter)) return;
+            const div = document.createElement('div');
+            div.className = 'drawer-item';
+            div.innerHTML = `
+              <div class="drawer-item-title">${item.name}</div>
+              <div class="drawer-item-sub">📍 ${isle.name} ｜ ${item.time}</div>
+            `;
+            div.onclick = () => {
+              const node = itemNodes.find(n => n.id === item.id);
+              if (node) focusTarget(node.worldPos.x, TOP, node.worldPos.z, 'item', item, isle);
+            };
+            drawerContainer.appendChild(div);
+          });
+        });
+      } else {
+        DATA.collaborations.forEach(c => {
+          if (filter && !c.item.includes(filter) && !c.courier.includes(filter) && !c.desc.includes(filter)) return;
+          const div = document.createElement('div');
+          div.className = 'drawer-item';
+          div.innerHTML = `
+            <div class="drawer-item-title">📦 ${c.item}</div>
+            <div class="drawer-item-sub">👤 ${c.courier} (${c.level === 'official' ? '正式里政' : '民間互助'})</div>
+            <div style="font-size:11px;color:#7a6d65;margin-top:2px;">${c.desc}</div>
+          `;
+          div.onclick = () => {
+            const isA = DATA.islands.find(is => is.id === c.from);
+            if (isA) focusTarget(isA.worldPos.x, TOP, isA.worldPos.z, 'island', isA);
+          };
+          drawerContainer.appendChild(div);
+        });
+      }
+    }
+
+    tabPillars.onclick = () => { currentTab = 'pillars'; tabPillars.classList.add('active'); tabCollab.classList.remove('active'); renderDrawer(); };
+    tabCollab.onclick = () => { currentTab = 'collab'; tabCollab.classList.add('active'); tabPillars.classList.remove('active'); renderDrawer(); };
+    document.getElementById('search-input').addEventListener('input', (e) => renderDrawer(e.target.value.trim()));
+
+    // ── 即時日誌 ──
+    const logList = document.getElementById('log-list');
+    function addLogEntry(text) {
+      const p = document.createElement('div');
+      p.className = 'log-item';
+      p.textContent = text;
+      logList.prepend(p);
+      if (logList.children.length > 5) logList.removeChild(logList.lastChild);
+    }
+
+    // ── 時段切換 ──
+    let simulatedHour = 10.0;
+    const timeDawnBtn = document.getElementById('time-dawn');
+    const timeDayBtn = document.getElementById('time-day');
+    const timeDuskBtn = document.getElementById('time-dusk');
+    const timeNightBtn = document.getElementById('time-night');
+    const timeButtons = [timeDawnBtn, timeDayBtn, timeDuskBtn, timeNightBtn];
+
+    function setTimeSlot(slot) {
+      simulatedHour = slot.hour;
+      timeButtons.forEach(b => b.classList.remove('active'));
+      if (slot.id === 'dawn') timeDawnBtn.classList.add('active');
+      if (slot.id === 'day') timeDayBtn.classList.add('active');
+      if (slot.id === 'dusk') timeDuskBtn.classList.add('active');
+      if (slot.id === 'night') timeNightBtn.classList.add('active');
+
+      const ang = slot.sunAngle;
+      sunLight.position.set(Math.cos(ang) * 28, Math.sin(ang) * 24 + 4, Math.sin(ang * 0.7) * 22);
+      sunLight.color.setHex(slot.dir);
+      hemiLight.color.setHex(slot.ambient);
+
+      itemNodes.forEach(node => {
+        const isActive = slot.activeItems.includes(node.id);
+        node.mesh.scale.setScalar(isActive ? 1.18 : 1.0);
+      });
+      addLogEntry(`⏰ 時間推進至【${slot.name}】，社區日常持續運作中`);
+    }
+
+    timeDawnBtn.onclick = () => setTimeSlot(DATA.timeSlots[0]);
+    timeDayBtn.onclick = () => setTimeSlot(DATA.timeSlots[1]);
+    timeDuskBtn.onclick = () => setTimeSlot(DATA.timeSlots[2]);
+    timeNightBtn.onclick = () => setTimeSlot(DATA.timeSlots[3]);
+
+    // ── 工具列開關 ──
+    let isBirdEye = false;
+    document.getElementById('toggle-bird').onclick = (e) => {
+      isBirdEye = !isBirdEye;
+      e.target.classList.toggle('active', isBirdEye);
+      if (isBirdEye) {
+        flyTo(new THREE.Vector3(0, TOP, 0), new THREE.Vector3(0.01, 38, 2));
+      } else {
+        resetToOverview();
+      }
+    };
+
+    let showLabels = true;
+    document.getElementById('toggle-labels').onclick = (e) => {
+      showLabels = !showLabels;
+      e.target.classList.toggle('active', !showLabels);
+      labelContainer.style.display = showLabels ? 'block' : 'none';
+    };
+
+    let showFlow = true;
+    document.getElementById('toggle-flow').onclick = (e) => {
+      showFlow = !showFlow;
+      e.target.classList.toggle('active', !showFlow);
+      collabLines.forEach(l => l.visible = showFlow);
+      walkers.forEach(w => w.mesh.visible = showFlow);
+    };
+
+    // ── 點擊射線拾取 ──
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    window.addEventListener('pointerdown', (e) => {
+      if (isTransitioning) isTransitioning = false;
+      if (e.target.closest('#brand-badge') || e.target.closest('#detail-card') ||
+          e.target.closest('#list-drawer') || e.target.closest('#hud-toolbar') ||
+          e.target.closest('#log-panel') || e.target.classList.contains('css2d-label')) {
         return;
       }
-      cameraFlight = {
-        startPos: camera.position.clone(),
-        endPos: pos.clone(),
-        startTarget: controls.target.clone(),
-        endTarget: targetLook.clone(),
-        startTime: performance.now(),
-        duration
-      };
-    }
 
-    function cancelCameraFlight() {
-      cameraFlight = null;
-    }
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
 
-    function resetOverviewCamera() {
-      isBirdsEye = false;
-      const aspect = window.innerWidth / window.innerHeight;
-      const dist = aspect > 1.2 ? 28.5 : (aspect > 0.8 ? 38 : 52);
-      const dir = new THREE.Vector3(0.24, 0.33, 0.87).normalize();
-      const targetPos = new THREE.Vector3(1.2, 0.6, 1.2);
-      const camPos = targetPos.clone().add(dir.multiplyScalar(dist));
-      flyToTarget(camPos, targetPos, 900);
-      closeDetailCard();
-    }
-
-    function toggleBirdsEye() {
-      isBirdsEye = !isBirdsEye;
-      document.getElementById('btn-toggle-birds').classList.toggle('active', isBirdsEye);
-      if (isBirdsEye) {
-        const topPos = controls.target.clone().add(new THREE.Vector3(0.01, 42, 6));
-        flyToTarget(topPos, controls.target, 800);
-      } else {
-        resetOverviewCamera();
-      }
-    }
-
-    // Select Island
-    function selectIsland(islandId) {
-      const isl = DATA.islands.find(i => i.id === islandId);
-      if (!isl) return;
-
-      currentSelectedIsland = isl;
-      currentSelectedItem = null;
-
-      // Update island label styles
-      document.querySelectorAll('.css2d-island-pill').forEach(el => {
-        el.classList.toggle('selected', el.dataset.islandId === islandId);
-      });
-
-      // Highlight building meshes on this island
-      highlightIslandMeshes(islandId);
-
-      // Camera flight with desktop offset
-      const center = islandCenters[islandId];
-      const target = center.clone();
-      if (window.innerWidth > 800) target.x += 1.2; // shift slightly to right of card
-      const camPos = target.clone().add(new THREE.Vector3(2.75, 5.3, 6.2));
-      flyToTarget(camPos, target);
-
-      // Show Island Info in Card
-      showIslandCard(isl);
-      triggerLogEvent('arrive', `里民瀏覽視角切換至【${isl.name}】。`);
-    }
-
-    // Select Individual Policy Item
-    function selectItem(itemId) {
-      let targetItem = null;
-      let targetIsland = null;
-      DATA.islands.forEach(isl => {
-        const f = isl.items.find(it => it.id === itemId);
-        if (f) { targetItem = f; targetIsland = isl; }
-      });
-      if (!targetItem) return;
-
-      currentSelectedItem = targetItem;
-      currentSelectedIsland = targetIsland;
-
-      // Highlight specific item parts
-      highlightItemMeshes(itemId);
-
-      // Find item position from kit entries
-      const entry = buildingKitEntries.find(e => e.id === itemId);
-      const itemPos = entry ? new THREE.Vector3().setFromMatrixPosition(entry.matrix) : islandCenters[targetIsland.id];
-
-      const target = itemPos.clone();
-      if (window.innerWidth > 800) target.x += 0.8;
-      const camPos = target.clone().add(new THREE.Vector3(1.6, 2.5, 3.2));
-      flyToTarget(camPos, target);
-
-      // Show Item Detail Card & Offscreen render
-      showItemCard(targetItem, targetIsland);
-    }
-
-    function highlightIslandMeshes(islandId) {
-      for (const kind in instancedMeshGroups) {
-        const { mesh, list } = instancedMeshGroups[kind];
-        let needsUp = false;
-        list.forEach(entry => {
-          if (entry.islandId === islandId) {
-            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(new THREE.Color(0xdb6a41), 0.22));
-            needsUp = true;
-          } else {
-            mesh.setColorAt(entry.instIndex, entry.color);
-            needsUp = true;
-          }
-        });
-        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      }
-    }
-
-    function highlightItemMeshes(itemId) {
-      for (const kind in instancedMeshGroups) {
-        const { mesh, list } = instancedMeshGroups[kind];
-        let needsUp = false;
-        list.forEach(entry => {
-          if (entry.id === itemId) {
-            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(new THREE.Color(0xdb6a41), 0.35));
-            needsUp = true;
-          } else {
-            mesh.setColorAt(entry.instIndex, entry.color);
-            needsUp = true;
-          }
-        });
-        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      }
-    }
-
-    function updateDayCycleHighlights(cycle) {
-      const yellow = new THREE.Color(0xfcea8b);
-      for (const kind in instancedMeshGroups) {
-        const { mesh, list } = instancedMeshGroups[kind];
-        let needsUp = false;
-        list.forEach(entry => {
-          if (entry.id && cycle.highlights.includes(entry.id)) {
-            mesh.setColorAt(entry.instIndex, entry.color.clone().lerp(yellow, 0.28));
-            needsUp = true;
-          } else if (!currentSelectedIsland || entry.islandId !== currentSelectedIsland.id) {
-            mesh.setColorAt(entry.instIndex, entry.color);
-            needsUp = true;
-          }
-        });
-        if (needsUp && mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      }
-    }
-
-    /* =========================================================
-       9. UI CARDS, SIDEBAR & OFFSCREEN 3D THUMBNAIL
-    ========================================================= */
-    let offscreenRenderer, offscreenScene, offscreenCamera;
-
-    function initOffscreenThumbnailRenderer() {
-      const cvs = document.getElementById('offscreen-thumb');
-      offscreenRenderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, alpha: true });
-      offscreenRenderer.setSize(160, 130);
-      offscreenRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-      offscreenScene = new THREE.Scene();
-      offscreenCamera = new THREE.PerspectiveCamera(30, 160 / 130, 0.1, 15);
-      offscreenCamera.position.set(1.4, 1.5, 2.0);
-      offscreenCamera.lookAt(0, 0.4, 0);
-
-      const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbbb, 1.2);
-      const dir = new THREE.DirectionalLight(0xfff5e6, 2.2);
-      dir.position.set(2, 4, 3);
-      offscreenScene.add(hemi, dir);
-    }
-
-    function renderThumbnailForModel(modelKind) {
-      // Clear previous preview meshes
-      while (offscreenScene.children.length > 2) {
-        offscreenScene.remove(offscreenScene.children[offscreenScene.children.length - 1]);
-      }
-      const group = new THREE.Group();
-      // Temporarily piggyback helper to build a standalone small object
-      const previewEntries = [];
-      const origAdd = addPart;
-      // Mock addPart into standalone group
-      const helper = (kind, pos, rot, scl, col) => {
-        const geo = sharedGeometries[kind];
-        const mat = kind.startsWith('glow') ? glowClayMaterial : solidClayMaterial.clone();
-        if (!kind.startsWith('glow')) mat.color = new THREE.Color(col);
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos[0], pos[1], pos[2]);
-        mesh.rotation.set(rot[0], rot[1], rot[2]);
-        mesh.scale.set(scl[0], scl[1], scl[2]);
-        group.add(mesh);
-      };
-
-      // Simple archetype builder clone for preview
-      buildStandalonePreview(modelKind, group);
-      offscreenScene.add(group);
-      offscreenRenderer.render(offscreenScene, offscreenCamera);
-    }
-
-    function buildStandalonePreview(modelKind, group) {
-      const m = new THREE.Matrix4();
-      const coral = 0xdb6a41, cream = 0xfff7f0, yellow = 0xfdea8d, wood = 0xba8c66, teal = 0x448292, green = 0x74866c;
-      const b = (geo, p, s, c) => {
-        const mesh = new THREE.Mesh(sharedGeometries[geo], new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
-        mesh.position.set(p[0], p[1], p[2]);
-        mesh.scale.set(s[0], s[1], s[2]);
-        group.add(mesh);
-      };
-      if (modelKind === 'office') {
-        b('rbox', [0, 0.35, 0], [0.8, 0.65, 0.7], cream);
-        b('hip', [0, 0.85, 0], [1.05, 0.45, 0.95], coral);
-      } else if (modelKind === 'park') {
-        b('cylinder', [0, 0.15, 0], [0.5, 0.2, 0.5], 0xc8b8aa);
-        b('ico', [0, 0.65, 0], [0.65, 0.75, 0.65], green);
-      } else if (modelKind === 'heart') {
-        b('sphere', [-0.15, 0.5, 0], [0.35, 0.35, 0.3], coral);
-        b('sphere', [0.15, 0.5, 0], [0.35, 0.35, 0.3], coral);
-        b('cone', [0, 0.35, 0], [0.45, -0.45, 0.3], coral);
-      } else {
-        b('rbox', [0, 0.4, 0], [0.75, 0.7, 0.75], coral);
-        b('cylinder', [0, 0.85, 0], [0.2, 0.25, 0.2], yellow);
-      }
-    }
-
-    function showIslandCard(isl) {
-      const card = document.getElementById('detail-card');
-      card.style.display = 'block';
-      document.getElementById('card-eyebrow').innerText = `主題島嶼 0${DATA.islands.indexOf(isl) + 1}`;
-      document.getElementById('card-title').innerText = isl.name;
-      document.getElementById('card-desc').innerText = isl.desc;
-
-      // Sub-item chips summary
-      const factsBox = document.getElementById('card-facts');
-      factsBox.innerHTML = '';
-      isl.items.forEach(it => {
-        const itemPill = document.createElement('div');
-        itemPill.className = 'policy-item-pill';
-        itemPill.innerHTML = `<span>${it.name}</span><span style="font-weight:700;color:var(--coral);">➔</span>`;
-        itemPill.addEventListener('click', () => selectItem(it.id));
-        factsBox.appendChild(itemPill);
-      });
-
-      document.getElementById('card-footer').innerHTML = `
-        <span class="timeline-badge">${isl.items.length} 項里政落地方針</span>
-      `;
-      renderThumbnailForModel(isl.items[0].model);
-    }
-
-    function showItemCard(item, isl) {
-      const card = document.getElementById('detail-card');
-      card.style.display = 'block';
-      document.getElementById('card-eyebrow').innerText = `${isl.name} ｜ 里政細項`;
-      document.getElementById('card-title').innerText = item.name;
-      document.getElementById('card-desc').innerText = item.desc;
-
-      const factsBox = document.getElementById('card-facts');
-      factsBox.innerHTML = '';
-      item.facts.forEach(f => {
-        const parts = f.split(/([0-9,%.~+-]+)/);
-        const fDiv = document.createElement('div');
-        fDiv.className = 'fact-box';
-        fDiv.innerHTML = `
-          <div class="fact-num">${parts[1] || ''}</div>
-          <div class="fact-label">${parts[0] || ''}${parts[2] || ''}</div>
-        `;
-        factsBox.appendChild(fDiv);
-      });
-
-      document.getElementById('card-footer').innerHTML = `
-        <span class="timeline-badge">⏱ 預計時程：${item.timeline}</span>
-      `;
-      renderThumbnailForModel(item.model);
-    }
-
-    function closeDetailCard() {
-      document.getElementById('detail-card').style.display = 'none';
-      currentSelectedIsland = null;
-      currentSelectedItem = null;
-      document.querySelectorAll('.css2d-island-pill').forEach(el => el.classList.remove('selected'));
-      // Reset color highlight
-      updateDayCycleHighlights(activeDayCycle);
-    }
-
-    // Populate Sidebar Content
-    function renderSidebar() {
-      const container = document.getElementById('sidebar-list');
-      container.innerHTML = '';
-
-      DATA.islands.forEach((isl, i) => {
-        const acc = document.createElement('div');
-        acc.className = 'island-accordion';
-        acc.innerHTML = `
-          <div class="accordion-summary">
-            <span>${(i + 1).toString().padStart(2, '0')}. ${isl.name}</span>
-            <span class="accordion-badge">${isl.items.length}</span>
-          </div>
-          <div class="accordion-content" id="acc-body-${isl.id}"></div>
-        `;
-        const summary = acc.querySelector('.accordion-summary');
-        const body = acc.querySelector('.accordion-content');
-
-        isl.items.forEach(it => {
-          const pill = document.createElement('div');
-          pill.className = 'policy-item-pill';
-          pill.id = `pill-${it.id}`;
-          pill.innerHTML = `<span>${it.name}</span><span style="font-size:10px;color:#8a7f78;">${it.timeline}</span>`;
-          pill.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectItem(it.id);
-          });
-          body.appendChild(pill);
-        });
-
-        summary.addEventListener('click', () => {
-          selectIsland(isl.id);
-        });
-
-        container.appendChild(acc);
-      });
-    }
-
-    function renderCollaborationSidebar() {
-      const container = document.getElementById('sidebar-list');
-      container.innerHTML = '';
-      DATA.collaborations.forEach(col => {
-        const fromIsl = DATA.islands.find(i => i.id === col.from);
-        const toIsl = DATA.islands.find(i => i.id === col.to);
-        const itemBox = document.createElement('div');
-        itemBox.className = 'island-accordion';
-        itemBox.style.padding = '12px';
-        itemBox.innerHTML = `
-          <div style="font-size:10px;font-family:var(--font-mono);font-weight:700;color:var(--coral);margin-bottom:2px;">
-            ${col.level.toUpperCase()} FLOW
-          </div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:4px;">${col.item}</div>
-          <div style="font-size:11px;color:#6d615b;line-height:1.4;">
-            <b>${col.role}</b> 穿梭於【${fromIsl ? fromIsl.name : ''}】與【${toIsl ? toIsl.name : ''}】之間。
-          </div>
-        `;
-        itemBox.addEventListener('click', () => {
-          selectIsland(col.from);
-        });
-        container.appendChild(itemBox);
-      });
-    }
-
-    /* =========================================================
-       10. TIME, CONTROLS, INTERACTION & ANIMATION LOOP
-    ========================================================= */
-    function setDayTime(minutes) {
-      clockMinutes = minutes;
-      const kf = getInterpolatedDayFrame(clockMinutes);
-
-      // Interpolate sky shader uniforms
-      if (skyMesh) {
-        skyMesh.material.uniforms.uTop.value.copy(kf.top);
-        skyMesh.material.uniforms.uHorizon.value.copy(kf.hor);
-        skyMesh.material.uniforms.uNight.value = kf.night;
-      }
-      // Fog matches horizon
-      scene.fog.color.copy(kf.hor);
-      if (waterMesh) {
-        waterMesh.material.uniforms.uWaterColor.value.copy(kf.wat);
-        waterMesh.material.uniforms.fogColor.value.copy(kf.hor);
-      }
-
-      // Hemisphere & Directional sun
-      hemiLight.color.copy(kf.hSky);
-      hemiLight.groundColor.copy(kf.hGnd);
-      hemiLight.intensity = kf.hI;
-
-      sunLight.color.copy(kf.sunColor);
-      sunLight.intensity = kf.sunI;
-
-      // Sun Direction formula from prompt:
-      // Quantized to 10 min, t = clamp((min-360)/720, 0, 1), az = π(.15+.7t), el = .35 + sin(tπ)*.75
-      const t = THREE.MathUtils.clamp((clockMinutes - 360) / 720, 0, 1);
-      const az = Math.PI * (0.15 + 0.7 * t);
-      const el = 0.35 + Math.sin(t * Math.PI) * 0.75;
-      const dir = new THREE.Vector3(
-        Math.cos(az) * Math.cos(el),
-        Math.sin(el),
-        0.55 * Math.cos(el) + 0.35
-      ).normalize();
-
-      if (skyMesh) skyMesh.material.uniforms.uSunDir.value.copy(dir);
-      sunLight.position.copy(dir.clone().multiplyScalar(45));
-
-      // Emissive windows & street lights boosted at night
-      glowClayMaterial.emissiveIntensity = 0.4 + kf.night * 2.8;
-
-      // Match nearest active dayCycle
-      let bestCycle = DATA.dayCycles[0];
-      DATA.dayCycles.forEach(c => {
-        if (clockMinutes >= c.min) bestCycle = c;
-      });
-      if (activeDayCycle !== bestCycle) {
-        activeDayCycle = bestCycle;
-        updateDayCycleHighlights(activeDayCycle);
-      }
-    }
-
-    function formatMinutesToClock(m) {
-      const hrs = Math.floor(m / 60) % 24;
-      const mins = Math.floor(m % 60);
-      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-    }
-
-    // Pointer Raycasting with <= 6px movement check
-    let pointerDownPos = { x: 0, y: 0 };
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    function onPointerDown(e) {
-      pointerDownPos = { x: e.clientX, y: e.clientY };
-      cancelCameraFlight();
-    }
-
-    function onPointerUp(e) {
-      const dx = e.clientX - pointerDownPos.x;
-      const dy = e.clientY - pointerDownPos.y;
-      if (Math.sqrt(dx * dx + dy * dy) > 6) return; // drag occurred, not a click
-
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(scene.children, true);
-
-      for (let i = 0; i < hits.length; i++) {
-        const obj = hits[i].object;
-        if (obj.userData && obj.userData.isIsland) {
-          selectIsland(obj.userData.islandId);
-          return;
-        }
-        if (obj.userData && obj.userData.isFlow) {
-          selectIsland(obj.userData.collab.from);
-          return;
+      const intersects = raycaster.intersectObjects(interactiveObjects, false);
+      if (intersects.length > 0) {
+        const hit = intersects[0].object;
+        const udata = hit.userData;
+        if (udata.type === 'island') {
+          focusTarget(hit.parent.position.x, TOP, hit.parent.position.z, 'island', udata.raw);
+        } else if (udata.type === 'item') {
+          focusTarget(hit.position.x, TOP, hit.position.z, 'item', udata.raw, udata.parentIsland);
         }
       }
-    }
+    });
 
-    // Animation Render Loop
-    let lastTime = performance.now();
-
-    function animate() {
-      requestAnimationFrame(animate);
-
-      const now = performance.now();
-      let dt = (now - lastTime) / 1000;
-      if (dt > 0.08) dt = 0.08;
-      lastTime = now;
-
-      // Progress Time if not paused and not reduced motion
-      if (!isPaused && !isReducedMotion) {
-        // 144 seconds per 1 day (1440 min) => 10 min per sec
-        clockMinutes = (clockMinutes + dt * 10) % 1440;
-        setDayTime(clockMinutes);
-      }
-
-      // Smooth camera flight
-      if (cameraFlight) {
-        const elapsed = now - cameraFlight.startTime;
-        const progress = Math.min(1.0, elapsed / cameraFlight.duration);
-        // easeInOutCubic
-        const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-        camera.position.lerpVectors(cameraFlight.startPos, cameraFlight.endPos, ease);
-        controls.target.lerpVectors(cameraFlight.startTarget, cameraFlight.endTarget, ease);
-        controls.update();
-        if (progress >= 1.0) cameraFlight = null;
-      } else {
-        controls.update();
-      }
-
-      // Water & Flow Shaders Time update
-      if (waterMesh) waterMesh.material.uniforms.uTime.value = now * 0.001;
-      flowLines.forEach(f => {
-        if (!isReducedMotion) f.material.uniforms.uTime.value = now * 0.001;
-      });
-
-      // Update Chibi Walkers
-      if (!isReducedMotion) updateWalkers(dt);
-
-      // Drift Clouds slowly
-      clouds.forEach(c => {
-        c.group.position.x += c.speed * dt;
-        if (c.group.position.x > 80) c.group.position.x = -80;
-      });
-
-      // Render
-      renderer.render(scene, camera);
-      cssRenderer.render(scene, camera);
-    }
-
-    /* =========================================================
-       11. EVENT LISTENERS & INITIALIZATION
-    ========================================================= */
-    function setupDOMEvents() {
-      window.addEventListener('resize', onWindowResize);
-      renderer.domElement.addEventListener('pointerdown', onPointerDown);
-      renderer.domElement.addEventListener('pointerup', onPointerUp);
-
-      document.getElementById('card-close-btn').addEventListener('click', closeDetailCard);
-      document.getElementById('btn-reset-cam').addEventListener('click', resetOverviewCamera);
-      document.getElementById('btn-toggle-birds').addEventListener('click', toggleBirdsEye);
-
-      document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-      });
-
-      // HUD Time Presets
-      const timeBtns = {
-        'btn-time-morning': 360,
-        'btn-time-day': 600,
-        'btn-time-dusk': 1020,
-        'btn-time-night': 1260
-      };
-      for (const bId in timeBtns) {
-        document.getElementById(bId).addEventListener('click', (e) => {
-          document.querySelectorAll('.hud-time-btn').forEach(btn => btn.classList.remove('active'));
-          e.currentTarget.classList.add('active');
-          setDayTime(timeBtns[bId]);
-        });
-      }
-
-      // HUD Toggles
-      document.getElementById('btn-toggle-labels').addEventListener('click', (e) => {
-        showLabels = !showLabels;
-        e.currentTarget.classList.toggle('active', showLabels);
-        document.querySelectorAll('.css2d-island-pill').forEach(el => el.style.display = showLabels ? 'block' : 'none');
-      });
-
-      document.getElementById('btn-toggle-flows').addEventListener('click', (e) => {
-        showFlows = !showFlows;
-        e.currentTarget.classList.toggle('active', showFlows);
-        flowLines.forEach(f => f.mesh.visible = showFlows);
-      });
-
-      document.getElementById('btn-toggle-pause').addEventListener('click', (e) => {
-        isPaused = !isPaused;
-        e.currentTarget.classList.toggle('active', isPaused);
-        const txt = document.getElementById('txt-pause');
-        txt.innerText = isPaused ? (currentLang === 'en' ? 'Play' : '播放') : (currentLang === 'en' ? 'Pause' : '暫停');
-      });
-
-      // Tabs: Themes vs Flows
-      document.getElementById('tab-themes').addEventListener('click', (e) => {
-        document.getElementById('tab-flows').classList.remove('active');
-        e.target.classList.add('active');
-        renderSidebar();
-      });
-      document.getElementById('tab-flows').addEventListener('click', (e) => {
-        document.getElementById('tab-themes').classList.remove('active');
-        e.target.classList.add('active');
-        renderCollaborationSidebar();
-      });
-
-      // Search filter
-      document.getElementById('search-input').addEventListener('input', (e) => {
-        const val = e.target.value.trim().toLowerCase();
-        document.querySelectorAll('.island-accordion').forEach(acc => {
-          const match = acc.innerText.toLowerCase().includes(val);
-          acc.style.display = match ? 'block' : 'none';
-        });
-      });
-
-      // Bilingual toggle
-      document.getElementById('btn-lang').addEventListener('click', toggleLanguage);
-
-      // Onboarding Help Modal
-      const modal = document.getElementById('help-modal');
-      document.getElementById('btn-help').addEventListener('click', () => modal.style.display = 'grid');
-      document.getElementById('btn-close-help').addEventListener('click', () => {
-        modal.style.display = 'none';
-        try { localStorage.setItem('shanguang_visited', 'true'); } catch(e){}
-      });
-
-      // Keyboard Controls
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeDetailCard();
-        if (e.key === 'ArrowLeft') controls.target.x -= 0.6;
-        if (e.key === 'ArrowRight') controls.target.x += 0.6;
-      });
-
-      // Prefers Reduced Motion listener
-      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-        isReducedMotion = e.matches;
-      });
-    }
-
-    function toggleLanguage() {
-      currentLang = currentLang === 'zh' ? 'en' : 'zh';
-      document.querySelectorAll('[data-zh]').forEach(el => {
-        el.innerText = el.getAttribute(`data-${currentLang}`) || el.innerText;
-      });
-    }
-
-    function onWindowResize() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-      cssRenderer.setSize(w, h);
-    }
-
-    /* Initialize Scene */
-    async function init() {
+    // ── 主程式初始化 ──
+    function init() {
       try {
-        const container = document.getElementById('webgl-container');
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0xf6eee6, 0.012);
 
-        // Three.js WebGL Renderer
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+        const aspect = window.innerWidth / window.innerHeight;
+        camera = new THREE.PerspectiveCamera(32, aspect, 0.3, 320);
+
+        const dDist = window.innerWidth < 800 ? 46 : 30;
+        const norm = new THREE.Vector3(0.24, 0.33, 0.87).normalize();
+        camera.position.copy(norm.multiplyScalar(dDist));
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        const maxPR = window.innerWidth < 800 ? 1.4 : 1.75;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPR));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
         container.appendChild(renderer.domElement);
 
-        // CSS2D Renderer for labels
-        cssRenderer = new CSS2DRenderer();
-        cssRenderer.setSize(window.innerWidth, window.innerHeight);
-        cssRenderer.domElement.style.position = 'absolute';
-        cssRenderer.domElement.style.top = '0px';
-        cssRenderer.domElement.style.pointerEvents = 'none';
-        document.body.appendChild(cssRenderer.domElement);
-
-        // Scene, Fog, PerspectiveCamera
-        scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0xf4eee3, 42, 150);
-
-        camera = new THREE.PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.3, 320);
-        camera.position.set(22, 18, 30);
+        labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelContainer.appendChild(labelRenderer.domElement);
 
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.07;
         controls.enablePan = false;
-        controls.minPolarAngle = THREE.MathUtils.degToRad(25);
-        controls.maxPolarAngle = THREE.MathUtils.degToRad(70);
+        controls.minPolarAngle = (25 * Math.PI) / 180;
+        controls.maxPolarAngle = (70 * Math.PI) / 180;
         controls.minDistance = 3;
-        controls.maxDistance = 70;
+        controls.maxDistance = 72;
+        controls.target.set(0, TOP, 0);
 
-        // Lights
-        hemiLight = new THREE.HemisphereLight(0xeef6fa, 0x8f8270, 1.35);
+        hemiLight = new THREE.HemisphereLight(0xfceee6, 0x8a7a6e, 1.25);
         scene.add(hemiLight);
 
-        sunLight = new THREE.DirectionalLight(0xfff1de, 2.9);
+        sunLight = new THREE.DirectionalLight(0xfff7ea, 1.8);
+        sunLight.position.set(22, 28, 18);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.set(2048, 2048);
-        sunLight.shadow.camera.near = 1;
-        sunLight.shadow.camera.far = 90;
-        sunLight.shadow.camera.left = -20;
-        sunLight.shadow.camera.right = 20;
-        sunLight.shadow.camera.top = 22;
-        sunLight.shadow.camera.bottom = -22;
-        sunLight.shadow.bias = -0.0006;
-        sunLight.shadow.normalBias = 0.045;
-        sunLight.shadow.radius = 3;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 80;
+        sunLight.shadow.camera.left = -16;
+        sunLight.shadow.camera.right = 16;
+        sunLight.shadow.camera.top = 16;
+        sunLight.shadow.camera.bottom = -16;
+        sunLight.shadow.bias = -0.0004;
         scene.add(sunLight);
 
-        fillLight = new THREE.DirectionalLight(0xbfd6ff, 0.35);
-        fillLight.position.set(-15, 20, -15);
-        scene.add(fillLight);
+        buildLandscape();
+        buildIslands();
+        compileAllInstances();
+        buildBackgroundFoliage();
+        setupWalkersAndCollaborations();
+        renderDrawer();
 
-        // Build Environment, Islands, Walkers, Kits
-        initEnvironment();
-        buildIslandsAndBridges();
-        compileBuildingKit();
-        initWalkerKit();
-        initCollaborationFlows();
-        initOffscreenThumbnailRenderer();
+        setTimeSlot(DATA.timeSlots[1]);
 
-        // UI & Event Setup
-        renderSidebar();
-        setupDOMEvents();
-        setDayTime(600); // 10:00 AM start
+        addLogEntry('✅ 山光里政策島載入完成！歡迎點擊探索');
+        addLogEntry('🌸 李昭靜：「打造十全十美，從聆聽每一位里民開始」');
 
-        // Initial Overview Camera Animation
-        resetOverviewCamera();
-
-        // First-visit detection
-        try {
-          if (!localStorage.getItem('shanguang_visited')) {
-            document.getElementById('help-modal').style.display = 'grid';
+        setTimeout(() => {
+          const loader = document.getElementById('loader');
+          if (loader) {
+            loader.style.transition = 'opacity 0.6s ease';
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 600);
           }
-        } catch(e) {}
+        }, 300);
 
-        // Hide Loader
-        const loader = document.getElementById('loader');
-        loader.style.opacity = '0';
-        loader.style.transition = 'opacity .4s ease';
-        setTimeout(() => loader.remove(), 420);
-
-        // Start render loop
-        animate();
+        window.addEventListener('resize', onWindowResize);
 
       } catch (err) {
-        console.error("Initialization error:", err);
-        const msg = document.getElementById('loader-msg');
-        if (msg) {
-          msg.style.color = '#c0392b';
-          msg.innerHTML = `無法載入 3D 畫布，請確認瀏覽器支援 WebGL。<br><small>${err.message}</small>`;
-        }
+        console.error('Initialization failed', err);
+        const st = document.getElementById('loader-status');
+        if (st) st.innerHTML = `<span style="color:#e63946;">載入失敗：${err.message}。請確認支援 WebGL 且網路順暢。</span>`;
       }
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // ── 動畫循環 ──
+    let lastTime = performance.now();
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+      const delta = Math.min((currentTime - lastTime) / 1000, 0.1);
+      lastTime = currentTime;
+
+      simulatedHour = (simulatedHour + delta * 0.05) % 24;
+
+      if (showFlow) {
+        walkers.forEach(w => {
+          if (w.path.length < 2) return;
+          w.progress += w.speed;
+          if (w.progress >= 1.0) {
+            w.progress = 0;
+            w.currentSegment++;
+            if (w.currentSegment >= w.path.length - 1) {
+              w.currentSegment = 0;
+            }
+          }
+          const p1 = w.path[w.currentSegment];
+          const p2 = w.path[w.currentSegment + 1];
+          if (p1 && p2) {
+            const curX = THREE.MathUtils.lerp(p1.x, p2.x, w.progress);
+            const curZ = THREE.MathUtils.lerp(p1.z, p2.z, w.progress);
+            w.mesh.position.set(curX, TOP, curZ);
+            w.mesh.lookAt(p2.x, TOP, p2.z);
+            w.mesh.position.y = TOP + Math.abs(Math.sin(w.progress * Math.PI * 4)) * 0.03;
+          }
+        });
+      }
+
+      if (isTransitioning) {
+        const elapsed = currentTime - flightStart;
+        const progress = Math.min(elapsed / flightDuration, 1.0);
+        const t = easeInOutCubic(progress);
+
+        camera.position.lerpVectors(camStartPos, camEndPos, t);
+        controls.target.lerpVectors(tgtStartPos, tgtEndPos, t);
+
+        if (progress >= 1.0) {
+          isTransitioning = false;
+        }
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+
+    init();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
